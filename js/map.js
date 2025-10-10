@@ -1,5 +1,3 @@
-import { fetchJSON, fetchCSV } from './utils/data.js';
-
 let selectedFeature = null;
 
 export function clearHighlight() {
