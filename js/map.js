@@ -196,7 +196,7 @@ export function setupMap(onSelect){
       // Add lakes layer after perimeter
       map.createPane('lakes');
       map.getPane('lakes').style.zIndex = 500;
-      const lakesUrl = './data/euhydro.geojson';
+      const lakesUrl = './data/euhydro_lightweight.geojson';
       fetch(lakesUrl)
         .then(r => r.json())
         .then(geo => {
@@ -242,7 +242,7 @@ export function setupMap(onSelect){
             });
           }
         }).catch(err=>{
-          console.error('Failed to load euhydro.geojson', err);
+          console.error('Failed to load euhydro_lightweight.geojson', err);
           alert('Could not load lakes layer. Place your GeoJSON at '+lakesUrl);
         });
 
