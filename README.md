@@ -1,7 +1,6 @@
 # Lake Ice Application
 
-Static web app to visualize lake ice cover on a Leaflet basemap with Apache ECharts charts.
-All data is loaded from static CSV/JSON/GeoJSON files.
+Static web app to visualize lake ice cover on a Leaflet basemap with Apache ECharts charts. All data is loaded from static CSV/JSON/GeoJSON files.
 
 ## Folder structure
 ```
