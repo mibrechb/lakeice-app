@@ -1,0 +1,690 @@
+:root {
+  /* Dark theme (default) */
+  --bg: #2D2D34;
+  --panel: #22232A;
+  --topbar-bg: #1F2025;
+  --muted: #9B989B;
+  --text: #CFCACA;
+  --boxfill: #2D2D34;
+  --accent: #38bdf8;
+  --border: #2D2D34;
+  --map-tile: 'http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png';
+  --label-tile: 'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png';
+  --shadow: 0 2px 12px rgba(255,255,255,0.10); /* white shadow for dark mode */
+  --topbar-shadow: 0 2px 12px rgba(255,255,255,0.10);
+  --close-btn-brd: #4d4d4d;
+}
+
+.theme-light {
+  --bg: #F3F4F6;
+  --panel: #F3F4F6;
+  --topbar-bg: #FFFFFF;
+  --muted: #818182;
+  --text: #404040;
+  --boxfill: #ffffff;
+  --accent: #38bdf8;
+  --border: #FFFFFF;
+  --map-tile: 'http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png';
+  --label-tile: 'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png';
+  --shadow: 0 2px 12px rgba(0,0,0,0.10); /* dark shadow for light mode */
+  --topbar-shadow: 0 2px 12px rgba(0,0,0,0.10);
+  --close-btn-brd: #ffffff;
+}
+
+* {
+  box-sizing: border-box
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial
+}
+
+a {
+  color: var(--accent)
+}
+
+/* Top bar */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  height: 56px;
+  background: var(--topbar-bg);
+  backdrop-filter: blur(8px);
+  /* border-bottom: 2px solid var(--accent); More visible border */
+  box-shadow: var(--topbar-shadow); /* Subtle shadow for separation */
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-weight: 700
+}
+
+.logo img {
+  display: block;
+  height: 36px;
+  width: auto;
+}
+
+.tabs {
+  display: flex;
+  gap: .75rem
+}
+
+.tab {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 0;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: bold;
+  background: transparent;
+  border-bottom: 3px solid transparent; /* Always reserve space for underline */
+}
+
+.tab.active {
+  color: var(--text);
+  border-bottom: 3px solid var(--accent); /* Underline for active tab */
+}
+
+/* Layout */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%
+}
+
+.content {
+  position: absolute;
+  top: 56px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* overflow: hidden; */
+}
+
+/* Map */
+#map {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+}
+
+.search-bar-wrapper {
+  position: absolute;
+  top: 10px;
+  left: 50px;
+  z-index: 1200;
+  width: 320px;
+  max-width: 90vw;
+}
+
+/* Legend */
+.leaflet-top.leaflet-right {
+  right: 10px;
+  top: 15px;
+}
+
+.leaflet-control.legend {
+  background: var(--topbar-bg);
+  padding: 8px 14px;
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  font: 13px/1.4 system-ui, sans-serif;
+}
+
+/* Alps line symbol */
+.legend-line {
+  display: inline-block;
+  vertical-align: middle;
+  width: 32px;
+  height: 0;
+  border-top: 3px dashed #f87171;
+  opacity: 0.7;
+}
+
+.leaflet-container {
+  background: #0b1020
+}
+
+.panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 42vw;
+  max-width: 50%;
+  min-width: 360px;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transform: translateX(100%);
+  transition: transform .28s ease;
+  z-index: 1300;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel.open {
+  transform: translateX(0)
+}
+
+.panel-header {
+  position: sticky;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 14px 14px 14px;
+  top: 0;
+  z-index: 2;
+  background: var(--panel);
+  /* box-shadow: var(--shadow); */
+  /* border-bottom: 2px solid var(--border); */
+}
+
+.panel-title {
+  font-size: 1rem;
+  font-weight: 600
+}
+
+.panel-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto; /* Enable vertical scrolling for everything except header */
+  padding: 0;
+}
+
+.panel-upper {
+  padding: 14px 14px 0 14px;
+  background: var(--panel);
+}
+
+.panel-lower {
+  background: var(--boxfill);
+  border-radius: 0 0 14px 14px;
+  padding: 25px 50px 24px 50px;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.panel-body .plot-bookmark-selector {
+  margin-left: -14px;
+  margin-right: -14px;
+  margin-bottom: 0px;
+  width: calc(100% + 28px);
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px
+}
+
+.meta .card {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--boxfill)
+}
+
+.close-btn {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--close-btn-brd);
+  /* border: 1px solid var(--boxfill); */
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 22px;
+  font-weight: bold;
+  font-family: inherit;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  box-shadow: var(--shadow);
+}
+
+.close-btn span,
+.close-btn svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+  background: var(--accent, #38bdf8);
+  color: #fff;
+  box-shadow: var(--shadow);
+  outline: none;
+}
+
+.back {
+  display: none
+}
+
+.hint {
+  color: var(--muted);
+  font-size: .85rem
+}
+
+#plot-lic-scatter, #plot-lic-agg, #plot-lip-scatter {
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--boxfill);
+  min-height: 320px;
+  max-height: 320px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+/* Mobile behavior */
+@media (max-width: 768px) {
+  .panel {
+    width: 100%;
+    min-width: unset;
+    max-width: none
+  }
+
+  .back {
+    display: inline-flex
+  }
+
+  .topbar {
+    height: 72px; /* or whatever your mobile topbar height is */
+  }
+  .content {
+    top: 72px;
+    height: calc(100vh - 72px);
+  }
+}
+
+/* Legend & static pages */
+.legend {
+  position: absolute;
+  left: 10px;
+  bottom: 14px;
+  z-index: 1100;
+  background: var(--boxfill);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: var(--muted);
+  font-size: .9rem
+}
+
+.static-page {
+  display: none;
+  width: 100%;
+  z-index: 1500;
+  min-height: 100%;
+}
+
+.static-page .page-content {
+  max-width: 900px;   /* About half of a typical desktop screen */
+  margin: 0 auto;
+  padding: 32px 16px;
+  background: var(--bg);
+  border-radius: 16px;
+  /* box-shadow: var(--shadow); */
+}
+
+@media (max-width: 768px) {
+  .static-page .page-content {
+    max-width: 100%;
+    padding: 16px 8px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+.static-page.active {
+  display: block
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  margin-right: 6px;
+  color: var(--muted);
+  font-size: .8rem
+}
+
+.hamburger {
+  display: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.mobile-tabs-dropdown {
+  display: none;
+  position: absolute;
+  top: 48px;
+  right: 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  z-index: 2000;
+  min-width: 140px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+}
+
+.mobile-tabs-dropdown .dropdown-item {
+  padding: 12px 18px;
+  cursor: pointer;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.mobile-tabs-dropdown .dropdown-item:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .tabs {
+    display: none;
+  }
+  .hamburger {
+    display: block;
+  }
+}
+
+/* Ensure app fits mobile width */
+html, body, #app, .content, #map {
+  width: 100vw;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.page-section {
+  padding: 24px 0;
+  text-align: left;
+}
+
+.page-section h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.35rem;
+  color: var(--accent);
+}
+
+.page-section p {
+  margin-bottom: 16px;
+  font-size: 1rem;
+}
+
+.page-img {
+  max-width: 400px;
+  width: 100%;
+  border-radius: 10px;
+  /* box-shadow: 0 2px 8px rgba(0,0,0,0.10); */
+  margin-bottom: 0;
+}
+
+.section-divider {
+  height: 1px;
+  background: var(--muted, #e5e7eb);
+  opacity: 0.3;
+  margin: 0 0;
+  width: 50%;
+  border: none;
+}
+
+.plot-bookmark-selector {
+  display: flex;
+  justify-content: stretch;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 0;
+  width: 100%;
+  padding: 0;
+}
+
+.plot-bookmark {
+  flex: 1 1 0;
+  padding: 10px 0;
+  background: var(--panel); /* Unselected uses panel color */
+  color: var(--muted, #334155);
+  border: 0px solid var(--boxfill, #22232A); /* Dark-grey border */
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  margin: 0;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.plot-bookmark.active {
+  background: var(--boxfill, #fff); /* Selected uses boxfill */
+  color: var(--text, #404040);
+  border-color: var(--boxfill, #fff);
+  z-index: 1;
+}
+
+/* Floating switch-style theme toggle */
+.theme-toggle-switch {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 3000;
+  width: 80px; /* Enough for two circles and spacing */
+  height: 40px;
+  background: var(--boxfill);
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  outline: none;
+}
+
+.toggle-slider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  gap: 8px; /* Space between circles */
+}
+
+.toggle-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+}
+
+.toggle-icon-bg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin: 0;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.light-bg {
+  background: #000; /* Black circle for light mode */
+}
+
+.dark-bg {
+  background: #fff; /* White circle for dark mode */
+}
+
+/* Only invert the image, not the background */
+body.theme-light .toggle-icon.light-icon {
+  filter: invert(1);
+}
+
+body.theme-light .toggle-icon.dark-icon {
+  filter: invert(0.7);
+}
+
+body:not(.theme-light) .toggle-icon.dark-icon {
+  filter: invert(0);
+}
+
+body:not(.theme-light) .toggle-icon.light-icon {
+  filter: invert(0.7);
+}
+
+/* Selected icon backgrounds */
+body.theme-light .light-bg {
+  background: #000;
+}
+body:not(.theme-light) .dark-bg {
+  background: #fff;
+}
+
+/* Unselected icon backgrounds */
+body.theme-light .dark-bg,
+body:not(.theme-light) .light-bg {
+  background: var(--boxfill);
+}
+
+.company-logo {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  width: 240px;      /* Adjust size as needed */
+  height: auto;
+  z-index: 3000;
+  opacity: 0.85;
+  pointer-events: none; /* Prevent interaction */
+  filter: none;         /* Black in light mode */
+  transition: filter 0.2s;
+}
+
+body:not(.theme-light) .company-logo {
+  filter: invert(1) brightness(2); /* White in dark mode */
+}
+
+.horizontal-section {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.horizontal-section .section-text {
+  flex: 2 1 0;
+}
+
+.horizontal-section .section-image {
+  flex: 1 1 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.horizontal-section .page-img {
+  max-width: 220px;
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 0;
+}
+
+.plot-lip-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: var(--boxfill);
+  box-shadow: var(--shadow);
+  padding: 0;
+  margin: 16px 0;
+}
+
+.plot-lip-table {
+  width: 100%;
+  min-width: 0px;
+  border-collapse: collapse;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+  font-size: 0.85rem
+}
+
+.plot-lip-table th, .plot-lip-table td {
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  text-align: center;
+}
+.plot-lip-table th {
+  background: var(--panel);
+  color: var(--text);
+  font-weight: 600;
+}
+.plot-lip-table tr:nth-child(even) td {
+  background: var(--panel);
+}
+.plot-lip-table tr:hover td {
+  background: var(--accent);
+  color: #fff;
+  transition: background 0.2s;
+}
+
+/* Sticky first column for plot-lip-table */
+.plot-lip-table th:first-child,
+.plot-lip-table td:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--panel);
+  z-index: 2;
+  box-shadow: var(--shadow);
+}
+
+.custom-tooltip {
+  position: absolute;
+  background: var(--accent, #22232A);
+  color: #ffffff;
+  border: 1px solid var(--border, #2D2D34);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  z-index: 9999;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+  opacity: 0.95;
+  transition: opacity 0.1s;
+}

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>lakeice.eawag.ch</title>
+  <link rel="icon" type="image/png" href="data/favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="data/favicon/favicon.svg" />
+  <link rel="shortcut icon" href="data/favicon/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="data/favicon/apple-touch-icon.png" />
+  <link rel="manifest" href="data/favicon/site.webmanifest" />
+  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css" />
+</head>
+<body class="theme-light">
+  <div id="app">
+    <div class="topbar" role="navigation" aria-label="Primary">
+      <div class="logo">
+        <img id="logoImg" src="./data/img/logo_dark.png" alt="Lake Ice Monitoring" style="height:36px;">
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-tab="map" aria-current="page">Map</button>
+        <button class="tab" data-tab="about">About</button>
+        <button class="tab" data-tab="funding">Funding</button>
+        <button class="tab" data-tab="methods">Methods</button>
+      </div>  
+      <div class="hamburger" tabindex="0" aria-label="Open menu">
+        &#9776;
+      </div>
+      <div class="mobile-tabs-dropdown">
+        <div class="dropdown-item" data-tab="map">Map Viewer</div>
+        <div class="dropdown-item" data-tab="about">About</div>
+        <div class="dropdown-item" data-tab="methods">Methods</div>
+        <div class="dropdown-item" data-tab="funding">Funding</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Map view -->
+      <div id="map-container">
+        <div class="search-bar-wrapper">
+          <input id="lakeSearch" class="awesomplete" type="text" placeholder="Search lake name..." autocomplete="off">
+          <div id="lakeSearchResults"></div>
+        </div>
+        <div id="map" role="application" aria-label="Lake map"></div>
+      </div>
+      <!-- <div class="legend">Click a lake polygon to view details</div> -->
+      <!-- Slide-over / mobile full-screen panel -->
+      <aside id="panel" class="panel" role="dialog" aria-modal="true" aria-labelledby="panel-title">
+        <div class="panel-header">
+          <div class="panel-title" id="panel-title">Lake details</div>
+          <div>
+            <button id="closeBtn" class="close-btn" title="Close" aria-label="Close">✕</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="panel-upper">
+            <!-- Metadata -->
+            <div id="lakeMeta" class="meta"></div>
+            <div class="hint" id="hint"></div>
+            <div class="plot-bookmark-selector">
+              <button class="plot-bookmark active" data-plot="lic">Lake Ice Cover</button>
+              <button class="plot-bookmark" data-plot="lip">Lake Ice Phenology</button>
+            </div>
+          </div>
+          <!-- <div class="section-divider"></div> -->
+          <div class="panel-lower">
+            <div id="plot-lic-scatter" style="height:320px;margin-bottom:24px"></div>
+            <div id="plot-lic-agg" style="height:320px"></div>
+            <div id="plot-lip-scatter" style="display:none"></div>
+            <div id="plot-lip-table" style="display:none;margin-bottom:24px"></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Static pages -->
+      <section id="about" class="static-page" aria-label="About"></section>
+      <section id="methods" class="static-page" aria-label="Methods"></section>
+      <section id="funding" class="static-page" aria-label="Funding"></section>
+    </div>
+  </div>
+  <button id="themeToggle" class="theme-toggle-switch" title="Toggle light/dark mode" aria-label="Toggle theme">
+    <span class="toggle-slider">
+      <span class="toggle-icon-bg light-bg">
+        <img src="./data/img/symbol_light.png" class="toggle-icon light-icon" alt="Light mode">
+      </span>
+      <span class="toggle-icon-bg dark-bg">
+        <img src="./data/img/symbol_dark.png" class="toggle-icon dark-icon" alt="Dark mode">
+      </span>
+    </span>
+  </button>
+  <img id="companyLogo" class="company-logo" src="./data/img/eawag_logo.png" alt="Eawag Logo">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
