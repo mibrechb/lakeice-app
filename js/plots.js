@@ -787,7 +787,7 @@ export async function renderLicPlots(lakeId) {
   /** Render plots for lake ice cover tab. */
   console.log('Rendering LIC plots for lake:', lakeId);
   try {
-    const ts = await fetchCSV(`/data/timeseries/${lakeId}.csv`);
+    const ts = await fetchCSV(`./data/timeseries/${lakeId}.csv`);
     console.log('Fetched timeseries:', ts);
     renderIceCoverPlot(document.getElementById('plot-lic-scatter'), ts, {lakeId});
     renderYearlyPercentilePlot(document.getElementById('plot-lic-agg'), ts, {lakeId});
@@ -802,9 +802,9 @@ export async function renderLicPlots(lakeId) {
 
 export async function renderLipPlots(lakeId) {
   /** Render plots for lake ice phenology tab. */
-  console.log('Rendering LIPplots for lake:', lakeId);
+  console.log('Rendering LIP plots for lake:', lakeId);
   try {
-    const rows = await fetchCSV(`/data/phenology/${lakeId}.csv`);
+    const rows = await fetchCSV(`./data/phenology/${lakeId}.csv`);
     // console.log('Fetched table:', rows);
     renderPhenologyIntervals(document.getElementById('plot-lip-scatter'), rows, {lakeId});
     renderPhenologyTable(document.getElementById('plot-lip-table'), rows, {lakeId});
