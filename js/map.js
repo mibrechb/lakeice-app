@@ -18,7 +18,7 @@ function normalize(str) {
 }
 
 export function setupMap(onSelect){
-  fetch('./data/alpineconvention.geojson')
+  fetch('./data/alpineconvention_lightweight.geojson')
     .then(r => r.json())
     .then(geo => {
 
@@ -53,7 +53,7 @@ export function setupMap(onSelect){
       // Add country borders layer (as lines)
       map.createPane('countries');
       map.getPane('countries').style.zIndex = 460;
-      fetch('./data/countries.json')
+      fetch('./data/countries_lightweight.geojson')
         .then(r => r.json())
         .then(geo => {
           L.geoJSON(geo, {
