@@ -58,6 +58,7 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
+
 const themeToggle = document.getElementById('themeToggle');
 const logoImg = document.getElementById('logoImg');
 if (themeToggle) {
@@ -107,6 +108,22 @@ if (themeToggle) {
     // Rerender plots
     if (window.panel && typeof window.panel.render === 'function' && window.currentMeta) {
       window.panel.render(window.currentMeta);
+    }
+  });
+}
+
+// Add click handler to logo
+const logoDiv = document.querySelector('.logo');
+if (logoDiv) {
+  logoDiv.style.cursor = 'pointer';
+  logoDiv.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (window.router && typeof window.router.switchTab === 'function') {
+      window.router.switchTab('map');
+    }
+    // Close the panel if open
+    if (window.panel && typeof window.panel.close === 'function') {
+      window.panel.close();
     }
   });
 }

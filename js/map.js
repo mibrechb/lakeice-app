@@ -218,26 +218,23 @@ export function setupMap(onSelect){
                 layer.setStyle({ color:'#facc15', weight:4 });
                 selectedFeature = layer;
                 const bounds = layer.getBounds();
-                // map.fitBounds(bounds, { maxZoom: 13 }); // center lake
 
-                // Get the bounds and center of the selected lake
-                const lakeCenter = bounds.getCenter();
-                // Desired zoom level
-                const zoom = Math.min(map.getBoundsZoom(bounds), 13);
+                // Center the lake
+                // map.fitBounds(bounds, { maxZoom: 13 });
+                // Center with offset to account for side panel
+                const lakeCenter = bounds.getCenter(); // Get the bounds and center of the selected lake
+                const zoom = Math.min(map.getBoundsZoom(bounds), 13); // Zoom level
                 // Calculate offset in pixels
                 const panel = document.querySelector('.panel');
                 const panelWidth = panel ? panel.offsetWidth : 0;
                 const mapWidth = map.getSize().x;
                 const offsetX = panelWidth / 2;
-                // Project lake center to pixel coordinates at desired zoom
-                const point = map.project(lakeCenter, zoom);
-                // Offset the point to the left by half the panel width
-                const newPoint = L.point(point.x + offsetX, point.y);
-                // Unproject back to LatLng
-                const newCenter = map.unproject(newPoint, zoom);
-                // Set the map view to the new center and zoom
-                map.setView(newCenter, zoom, { animate: true });
+                const point = map.project(lakeCenter, zoom); // Project lake center to pixel coordinates at desired zoom
+                const newPoint = L.point(point.x + offsetX, point.y); // Offset the point to the left by half the panel width
+                const newCenter = map.unproject(newPoint, zoom); // Reproject back to LatLng
+                map.setView(newCenter, zoom, { animate: true }); // Set the map view to the new center and zoom
 
+                // Open side panel and update URL
                 selectLake(feature.properties.OBJECT_ID, layer, feature.properties);
               });
               layer.bindTooltip(feature.properties.NAM, {sticky:true, direction:'top'});
