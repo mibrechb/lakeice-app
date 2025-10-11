@@ -217,9 +217,26 @@ export function setupMap(onSelect){
                 clearHighlight();
                 layer.setStyle({ color:'#facc15', weight:4 });
                 selectedFeature = layer;
-
                 const bounds = layer.getBounds();
-                map.fitBounds(bounds, { maxZoom: 13 });
+                // map.fitBounds(bounds, { maxZoom: 13 }); // center lake
+
+                // Get the bounds and center of the selected lake
+                const lakeCenter = bounds.getCenter();
+                // Desired zoom level
+                const zoom = Math.min(map.getBoundsZoom(bounds), 13);
+                // Calculate offset in pixels
+                const panel = document.querySelector('.panel');
+                const panelWidth = panel ? panel.offsetWidth : 0;
+                const mapWidth = map.getSize().x;
+                const offsetX = panelWidth / 2;
+                // Project lake center to pixel coordinates at desired zoom
+                const point = map.project(lakeCenter, zoom);
+                // Offset the point to the left by half the panel width
+                const newPoint = L.point(point.x + offsetX, point.y);
+                // Unproject back to LatLng
+                const newCenter = map.unproject(newPoint, zoom);
+                // Set the map view to the new center and zoom
+                map.setView(newCenter, zoom, { animate: true });
 
                 selectLake(feature.properties.OBJECT_ID, layer, feature.properties);
               });
@@ -294,7 +311,7 @@ export function setupMap(onSelect){
       // Close panel by clicking empty map
       map.on('click', (e)=>{
         if(!e.originalEvent.target.closest('.leaflet-interactive')) {
-          clearHighlight(); // <-- Add this line
+          clearHighlight();
           onSelect(null, {close:true});
         }
       });
