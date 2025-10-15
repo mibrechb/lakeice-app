@@ -1,16 +1,19 @@
 export function setupRouter() {
-  function switchTab(tabName) {
+  function switchTab(tabName, updateHash = true) {
     document.querySelectorAll('.tab').forEach(tab => {
       tab.classList.toggle('active', tab.dataset.tab === tabName);
     });
     document.querySelectorAll('.static-page, #map').forEach(page => {
       page.style.display = 'none';
     });
-    // Hide map-container and panel for static pages
     if (tabName === 'map') {
       document.getElementById('map-container').style.display = '';
       document.getElementById('panel').style.display = '';
       document.getElementById('map').style.display = 'block';
+      if (updateHash) {
+        // Remove hash entirely (avoid leaving a trailing '#')
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
     } else {
       document.getElementById('map-container').style.display = 'none';
       document.getElementById('panel').style.display = 'none';
@@ -19,6 +22,9 @@ export function setupRouter() {
       fetch(`./pages/${tabName}.html`)
         .then(r => r.text())
         .then(html => { pageSection.innerHTML = html; });
+      if (updateHash) {
+        window.location.hash = '#' + tabName;
+      }
     }
     document.dispatchEvent(new CustomEvent('tabchange', { detail: { name: tabName } }));
   }
@@ -39,11 +45,35 @@ export function setupRouter() {
       });
       mobileDropdown.querySelectorAll('.dropdown-item').forEach(item => {
         item.addEventListener('click', () => {
-          window.router?.switchTab(item.dataset.tab);
+          window.router?.switchTab(item.dataset.tab, true);
           mobileDropdown.style.display = 'none';
         });
       });
+      // Desktop tabs: delegate click handling here so router is the single source of truth
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          window.router?.switchTab(tab.dataset.tab, true);
+        });
+      });
     }
+  });
+
+  // Helper to get tab name from hash
+  function getTabFromHash() {
+    const hash = window.location.hash.replace(/^#/, '');
+    // Default to 'map' if no hash or unknown tab
+    const validTabs = ['map', 'about', 'funding', 'methods'];
+    return validTabs.includes(hash) ? hash : 'map';
+  }
+
+  // Listen for hash changes and load the correct tab
+  window.addEventListener('hashchange', () => {
+    window.router.switchTab(getTabFromHash(), false);
+  });
+
+  // On initial load, switch to the tab in the hash
+  document.addEventListener('DOMContentLoaded', () => {
+    window.router.switchTab(getTabFromHash(), false);
   });
 
   return window.router;

@@ -7,7 +7,20 @@ export function setupPanel(){
   const closeBtn = document.getElementById('closeBtn');
 
   function open(){ panel.classList.add('open'); panel.focus(); }
-  function close(){ panel.classList.remove('open'); clear(); clearHighlight(); history.replaceState(null,'',location.pathname); }
+  function close(){
+    panel.classList.remove('open');
+    clear();
+    clearHighlight();
+    try {
+      // Remove only the lake_id query parameter and preserve the hash
+      const url = new URL(window.location.href);
+      url.searchParams.delete('lake_id');
+      history.replaceState(null, '', url.pathname + url.search + url.hash);
+    } catch (err) {
+      // Fallback: don't modify history if URL parsing fails
+      console.warn('panel.close: failed to update history', err);
+    }
+  }
 
   closeBtn.addEventListener('click', close);
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });

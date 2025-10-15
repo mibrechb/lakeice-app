@@ -1,3 +1,12 @@
+@font-face {
+  font-family: "Mona_Sans";
+  src: url("../fonts/Mona_Sans/MonaSans-VariableFont_wdth,wght.ttf") format("truetype");
+  /* variable font weight range (use widely-supported range) */
+  font-weight: 100 900;
+  /* allow fallback text until font loads */
+  font-display: swap;
+}
+
 :root {
   /* Dark theme (default) */
   --bg: #2D2D34;
@@ -41,7 +50,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial
+  /* prefer system fonts first, then common fallbacks; include generic family last */
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 a {
@@ -123,13 +133,77 @@ a {
   z-index: 1000;
 }
 
+/* Search bar */
 .search-bar-wrapper {
   position: absolute;
   top: 10px;
-  left: 50px;
+  left: 60px;
   z-index: 1200;
-  width: 320px;
+  width: auto;
   max-width: 90vw;
+}
+
+#lakeSearch {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--text);
+  background: var(--boxfill);
+  color: var(--text);
+  font-size: 0.95rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+#lakeSearch::placeholder {
+  color: var(--muted);
+}
+
+#lakeSearch:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 8px 24px rgba(56,189,248,0.12);
+}
+
+/* Awesomplete dropdown (library) styling */
+.awesomplete ul {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 6px 0 0 0;
+  padding: 6px 0;
+  list-style: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  z-index: 1600; /* above panel and map controls */
+  max-height: 40vh;
+  overflow: auto;
+}
+
+.awesomplete li {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.awesomplete li[aria-selected="true"], .awesomplete li:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+/* Custom results container (if used) */
+#lakeSearchResults {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin-top: 6px;
+  z-index: 1550;
+}
+
+@media (max-width: 768px) {
+  .search-bar-wrapper { left: 8px; right: 8px; width: auto; }
+  #lakeSearch { font-size: 1rem; padding: 10px; }
 }
 
 /* Legend */
@@ -326,7 +400,7 @@ a {
   }
 }
 
-/* Legend & static pages */
+/* Legend */
 .legend {
   position: absolute;
   left: 10px;
@@ -340,6 +414,7 @@ a {
   font-size: .9rem
 }
 
+/* static pages */
 .static-page {
   display: none;
   width: 100%;
@@ -356,6 +431,26 @@ a {
   /* box-shadow: var(--shadow); */
 }
 
+.page-content h2 {
+  font-family: "Mona_Sans", Arial, sans-serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 0;
+  margin-bottom: 10px;
+  letter-spacing: 0.01em;
+}
+
+.static-page .page-content p {
+  /* make selector more specific so it wins over .page-section p when both apply */
+  font-family: "Mona_Sans", Arial, sans-serif;
+  font-size: 1.35rem;
+  color: var(--text);
+  margin-top: 0;
+  margin-bottom: 10px;
+  letter-spacing: 0.01em;
+}
+
 @media (max-width: 768px) {
   .static-page .page-content {
     max-width: 100%;
@@ -367,6 +462,39 @@ a {
 
 .static-page.active {
   display: block
+}
+
+.page-section {
+  padding: 24px 0;
+  font-family: "Mona_Sans", Arial, sans-serif;
+  text-align: left;
+}
+
+.page-section h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-family: "Mona_Sans", Arial, sans-serif;
+  font-weight: 600;
+  font-size: 1.35rem;
+  color: var(--accent);
+}
+
+.page-section p {
+  margin-bottom: 16px;
+  font-size: 1.25rem;
+}
+
+/* Opt-out class for sections where we don't want text to scale down next to images */
+.no-text-scale p {
+  font-size: 1.25rem; /* ensure paragraphs here keep the standard size */
+}
+
+.page-img {
+  max-width: 400px;
+  width: 100%;
+  border-radius: 10px;
+  /* box-shadow: 0 2px 8px rgba(0,0,0,0.10); */
+  margin-bottom: 0;
 }
 
 .pill {
@@ -426,31 +554,6 @@ html, body, #app, .content, #map {
   width: 100vw;
   max-width: 100vw;
   overflow-x: hidden;
-}
-
-.page-section {
-  padding: 24px 0;
-  text-align: left;
-}
-
-.page-section h3 {
-  margin-top: 0;
-  margin-bottom: 12px;
-  font-size: 1.35rem;
-  color: var(--accent);
-}
-
-.page-section p {
-  margin-bottom: 16px;
-  font-size: 1rem;
-}
-
-.page-img {
-  max-width: 400px;
-  width: 100%;
-  border-radius: 10px;
-  /* box-shadow: 0 2px 8px rgba(0,0,0,0.10); */
-  margin-bottom: 0;
 }
 
 .section-divider {
@@ -598,6 +701,52 @@ body:not(.theme-light) .company-logo {
   filter: invert(1) brightness(2); /* White in dark mode */
 }
 
+.section-image {
+  display: flex;
+  align-items: flex-start; /* align image and text to top */
+  gap: 24px;
+}
+
+/* Add spacing above the funding section specifically */
+.funding-section {
+  margin-top: 32px;
+}
+
+/* Funding/logo variants for light/dark themes */
+.funding-logo {
+  display: none; /* default hidden, show per-theme */
+}
+body.theme-light .funding-logo--light {
+  display: block;
+}
+body:not(.theme-light) .funding-logo--dark {
+  display: block;
+}
+
+/* Funding logos should show without rounded corners or clipping */
+.funding-logo {
+  border-radius: 0 !important; /* override .page-img rounding if any */
+  object-fit: contain; /* preserve aspect ratio, don't crop */
+  overflow: visible; /* ensure not clipped by parent */
+  display: none; /* hidden by default; theme rules will show the matching variant */
+}
+
+/* On small screens stack logo above text for better layout */
+@media (max-width: 768px) {
+  .section-image {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .funding-logo {
+    height: 120px !important;
+    width: auto !important;
+  }
+  .funding-section {
+    margin-top: 16px;
+  }
+}
+
 .horizontal-section {
   display: flex;
   flex-direction: row;
@@ -614,6 +763,18 @@ body:not(.theme-light) .company-logo {
   flex: 1 1 0;
   display: flex;
   justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .section-image {
+    flex-direction: column !important;
+    gap: 16px !important;
+    align-items: flex-start !important;
+  }
+  .section-image img {
+    margin-top: 8px;
+    margin-left: 0;
+  }
 }
 
 .horizontal-section .page-img {
