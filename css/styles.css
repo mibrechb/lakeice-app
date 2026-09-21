@@ -948,24 +948,65 @@ body[data-theme="dark"] .funding-logo--dark { display:block; }
 .welcome-dialog {
   width:min(600px,calc(100vw - 28px));
   max-width:600px;
+  max-height:calc(100dvh - 28px);
   margin:auto;
   padding:0;
+  overflow:hidden;
   border:0;
   border-radius:22px;
   background:transparent;
   color:var(--text);
 }
 .welcome-dialog::backdrop { background:rgba(11,24,34,.58); backdrop-filter:blur(5px); }
+
 .welcome-content {
   position:relative;
   display:grid;
   gap:20px;
+  max-height:calc(100dvh - 28px);
   padding:32px;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  scrollbar-width:thin;
+  scrollbar-color:var(--muted) transparent;
   border:1px solid var(--border);
   border-radius:22px;
   background:var(--surface);
   box-shadow:0 24px 75px rgba(0,0,0,.3);
 }
+
+/* Keep the modal scrollbar subtle and inside the rounded content shell. */
+.welcome-content::-webkit-scrollbar {
+  width:9px;
+}
+.welcome-content::-webkit-scrollbar-track {
+  background:transparent;
+  margin:12px 0;
+}
+.welcome-content::-webkit-scrollbar-thumb {
+  min-height:36px;
+  border:2px solid transparent;
+  border-radius:999px;
+  background:var(--muted);
+  background-clip:padding-box;
+}
+.welcome-content::-webkit-scrollbar-thumb:hover {
+  background:var(--text);
+  background-clip:padding-box;
+}
+.welcome-content::-webkit-scrollbar-button {
+  width:0;
+  height:0;
+  display:none;
+}
+
+/*
+  <dialog> focuses its first focusable control when opened. In this modal that
+  is normally the close button, so browsers may draw their own heavy outline.
+  Replace it with the same focus treatment used elsewhere in the app.
+*/
 .welcome-close {
   position:absolute;
   top:11px;
@@ -974,11 +1015,23 @@ body[data-theme="dark"] .funding-logo--dark { display:block; }
   height:35px;
   display:grid;
   place-items:center;
+  padding:0;
   border:0;
   border-radius:10px;
+  outline:0;
   background:var(--surface-soft);
+  color:var(--text);
+  box-shadow:none;
+  appearance:none;
+  -webkit-appearance:none;
   font-size:24px;
+  line-height:1;
   cursor:pointer;
+}
+.welcome-close:hover { background:var(--border); }
+.welcome-close:focus-visible {
+  outline:3px solid rgba(21,151,197,.25);
+  outline-offset:2px;
 }
 .welcome-copy { padding-right:24px; }
 .welcome-copy h1 { margin:0 0 12px; font-size:28px; line-height:1.14; }
