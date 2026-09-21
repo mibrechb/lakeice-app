@@ -262,7 +262,47 @@ function formatStage2Tooltip(point) {
   `;
 }
 
-function buildStage2Climatology(harmonized) {
+function median(values) {
+  const valid = values
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
+
+  if (!valid.length) return null;
+
+  const middle = Math.floor(valid.length / 2);
+
+  return valid.length % 2
+    ? valid[middle]
+    : (valid[middle - 1] + valid[middle]) / 2;
+}
+
+
+function circularRollingMedian(values, windowSize = 7) {
+  if (windowSize < 1 || windowSize % 2 === 0) {
+    throw new Error('windowSize must be a positive odd integer.');
+  }
+
+  const n = values.length;
+  const halfWindow = Math.floor(windowSize / 2);
+
+  return values.map((_, index) => {
+    const window = [];
+
+    for (let offset = -halfWindow; offset <= halfWindow; offset += 1) {
+      const wrappedIndex = (index + offset + n) % n;
+      const value = values[wrappedIndex];
+
+      if (Number.isFinite(value)) {
+        window.push(value);
+      }
+    }
+
+    return median(window);
+  });
+}
+
+
+function buildStage2Climatology(harmonized, smoothingWindow = 7) {
   /**
    * Pool Stage-2 daily values by seasonal calendar day.
    * The seasonal axis runs Sep 1 -> Aug 31.
@@ -273,13 +313,19 @@ function buildStage2Climatology(harmonized) {
 
   for (const point of harmonized) {
     const date = new Date(point.timestamp);
+
     const key = [
       String(date.getUTCMonth() + 1).padStart(2, '0'),
       String(date.getUTCDate()).padStart(2, '0'),
     ].join('-');
 
-    if (!byMonthDay.has(key)) byMonthDay.set(key, []);
-    byMonthDay.get(key).push(point.cover);
+    if (!byMonthDay.has(key)) {
+      byMonthDay.set(key, []);
+    }
+
+    if (Number.isFinite(point.cover)) {
+      byMonthDay.get(key).push(point.cover);
+    }
   }
 
   // Sep 1, 1999 -> Aug 31, 2000 includes Feb 29.
@@ -287,12 +333,14 @@ function buildStage2Climatology(harmonized) {
   const end = Date.UTC(2000, 7, 31);
 
   const days = [];
+
   for (
     let timestamp = start;
     timestamp <= end;
     timestamp += DAY_MS
   ) {
     const date = new Date(timestamp);
+
     const key = [
       String(date.getUTCMonth() + 1).padStart(2, '0'),
       String(date.getUTCDate()).padStart(2, '0'),
@@ -305,12 +353,26 @@ function buildStage2Climatology(harmonized) {
     days.push({
       key,
       timestamp,
-      count:values.length,
-      p05:quantile(values, .05),
-      p25:quantile(values, .25),
-      median:quantile(values, .50),
-      p75:quantile(values, .75),
-      p95:quantile(values, .95),
+      count: values.length,
+      p05: quantile(values, .05),
+      p25: quantile(values, .25),
+      median: quantile(values, .50),
+      p75: quantile(values, .75),
+      p95: quantile(values, .95),
+    });
+  }
+
+  // Apply a centered rolling median along the seasonal axis.
+  const fields = ['p05', 'p25', 'median', 'p75', 'p95'];
+
+  for (const field of fields) {
+    const smoothed = circularRollingMedian(
+      days.map((day) => day[field]),
+      smoothingWindow,
+    );
+
+    days.forEach((day, index) => {
+      day[field] = smoothed[index];
     });
   }
 
