@@ -62,7 +62,6 @@ setMapTheme(document.body.dataset.theme);
 
 const welcomeDialog = document.querySelector('#welcome-dialog');
 const welcomeLake = document.querySelector('#welcome-lake');
-const welcomeTitle = document.querySelector('#welcome-title');
 
 function closeWelcome() {
   if (welcomeDialog.open) welcomeDialog.close();
@@ -89,6 +88,7 @@ welcomeDialog.addEventListener('click', (event) => {
 welcomeLake.disabled = !CONFIG.welcomeLakes.some((lake) => mapController.hasLake(lake.id));
 
 requestAnimationFrame(() => {
+  welcomeDialog.tabIndex = -1;
   welcomeDialog.showModal();
-  welcomeTitle?.focus({preventScroll: true});
+  welcomeDialog.focus({preventScroll: true});
 });
