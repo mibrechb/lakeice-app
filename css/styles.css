@@ -370,15 +370,14 @@ body.preview-mode .panel {
   font-weight:800;
 }
 
-.welcome-preview-notice strong::before {
-  content:"⚒";
+.welcome-preview-icon {
   flex:0 0 auto;
   color:#b91c1c;
   font-size:16px;
   line-height:1;
 }
 
-body[data-theme="dark"] .welcome-preview-notice strong::before {
+body[data-theme="dark"] .welcome-preview-icon {
   color:#f87171;
 }
 
@@ -1046,12 +1045,14 @@ body[data-theme="dark"] .funding-logo--dark { display:block; }
   background:var(--border);
 }
 
-.welcome-close:focus-visible {
+.welcome-close:focus-visible,
+.welcome-actions a:focus-visible,
+.welcome-actions button:focus-visible {
   outline:3px solid rgba(21,151,197,.25);
   outline-offset:2px;
 }
 
-.welcome-dialog:focus {
+#welcome-title:focus {
   outline:none;
 }
 .welcome-copy { padding-right:24px; }
@@ -1101,7 +1102,7 @@ body[data-theme="dark"] .welcome-project img {
   gap:10px;
 }
 
-.welcome-actions button {
+.welcome-actions :is(button,a) {
   display:inline-flex;
   align-items:center;
   justify-content:center;
@@ -1115,7 +1116,7 @@ body[data-theme="dark"] .welcome-project img {
   mask-image:url("../data/img/icon_lake.svg");
   -webkit-mask-image:url("../data/img/icon_lake.svg");
 }
-.primary-button,.secondary-button { border:0; border-radius:11px; padding:11px 16px; font-weight:750; cursor:pointer; }
+.primary-button,.secondary-button { border:0; border-radius:11px; padding:11px 16px; font-weight:750; line-height:1.2; text-decoration:none; cursor:pointer; }
 .primary-button { background:var(--accent-strong); color:#fff; }
 .secondary-button { background:var(--surface-soft); color:var(--text); }
 .primary-button:disabled { opacity:.45; cursor:not-allowed; }
@@ -1218,6 +1219,7 @@ body[data-theme="dark"] .welcome-project img {
   .page-content p { font-size:16px; }
   .section-image { flex-direction:column; gap:16px; }
   .page-img { max-width:100%; }
+  .welcome-dialog,.welcome-content { max-height:calc(100dvh - 20px); }
   .welcome-content { gap:16px; padding:25px 20px 21px; }
   .welcome-copy h1 { font-size:23px; }
   .welcome-project { grid-template-columns:100px 1fr; gap:13px; }
