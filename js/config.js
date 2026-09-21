@@ -53,8 +53,8 @@ export const CONFIG = {
 
     // Fixed inset extent: [[west, south], [east, north]]
   bounds: [
-    [-5, 32],
-    [32, 58],
+    [-10, 35],
+    [27.5, 51],
   ],
     landUrl:'https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json',
     countriesUrl:'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json',
