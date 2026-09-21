@@ -1,80 +1,98 @@
-export function setupRouter() {
-  function switchTab(tabName, updateHash = true) {
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.classList.toggle('active', tab.dataset.tab === tabName);
+import {CONFIG} from './config.js?v=20260921-3';
+
+const VALID_VIEWS = new Set(['map', ...Object.keys(CONFIG.pages)]);
+const pageCache = new Map();
+
+function viewFromHash() {
+  const value = window.location.hash.replace(/^#/, '');
+  return VALID_VIEWS.has(value) ? value : 'map';
+}
+
+export function setupRouter({onViewChange} = {}) {
+  const mapView = document.querySelector('#map-view');
+  const pageView = document.querySelector('#page-view');
+  const pageContent = document.querySelector('#page-content');
+  const menuButton = document.querySelector('#menu-button');
+  const mobileMenu = document.querySelector('#mobile-menu');
+
+  async function loadPage(name) {
+    if (pageCache.has(name)) return pageCache.get(name);
+
+    const response = await fetch(CONFIG.pages[name]);
+    if (!response.ok) {
+      throw new Error(`Could not load ${name} (${response.status}).`);
+    }
+
+    const html = await response.text();
+    pageCache.set(name, html);
+    return html;
+  }
+
+  function updateNavigation(name) {
+    document.querySelectorAll('[data-view]').forEach((element) => {
+      const active = element.dataset.view === name;
+      element.classList.toggle('active', active);
+      if (element.matches('.tab')) {
+        active
+          ? element.setAttribute('aria-current', 'page')
+          : element.removeAttribute('aria-current');
+      }
     });
-    document.querySelectorAll('.static-page, #map').forEach(page => {
-      page.style.display = 'none';
-    });
-    if (tabName === 'map') {
-      document.getElementById('map-container').style.display = '';
-      document.getElementById('panel').style.display = '';
-      document.getElementById('map').style.display = 'block';
+  }
+
+  function closeMenu() {
+    mobileMenu.hidden = true;
+    menuButton.setAttribute('aria-expanded', 'false');
+  }
+
+  async function show(name, {updateHash = true} = {}) {
+    const view = VALID_VIEWS.has(name) ? name : 'map';
+    updateNavigation(view);
+    closeMenu();
+
+    if (view === 'map') {
+      mapView.hidden = false;
+      pageView.hidden = true;
       if (updateHash) {
-        // Remove hash entirely (avoid leaving a trailing '#')
-        history.replaceState(null, '', window.location.pathname + window.location.search);
+        history.replaceState(null, '', `${location.pathname}${location.search}`);
       }
     } else {
-      document.getElementById('map-container').style.display = 'none';
-      document.getElementById('panel').style.display = 'none';
-      const pageSection = document.getElementById(tabName);
-      pageSection.style.display = 'block';
-      fetch(`./pages/${tabName}.html`)
-        .then(r => r.text())
-        .then(html => { pageSection.innerHTML = html; });
-      if (updateHash) {
-        window.location.hash = '#' + tabName;
+      mapView.hidden = true;
+      pageView.hidden = false;
+      pageContent.innerHTML = '<div class="page-loading">Loading…</div>';
+
+      try {
+        pageContent.innerHTML = await loadPage(view);
+      } catch (error) {
+        pageContent.innerHTML = `<div class="page-error">${error.message}</div>`;
+      }
+
+      if (updateHash && location.hash !== `#${view}`) {
+        location.hash = view;
       }
     }
-    document.dispatchEvent(new CustomEvent('tabchange', { detail: { name: tabName } }));
-  }
-  window.router = { switchTab };
 
-  // Setup mobile tab event listeners after DOM is ready
-  document.addEventListener('DOMContentLoaded', () => {
-    const hamburger = document.querySelector('.hamburger');
-    const mobileDropdown = document.querySelector('.mobile-tabs-dropdown');
-    if (hamburger && mobileDropdown) {
-      hamburger.addEventListener('click', () => {
-        mobileDropdown.style.display = 'block';
-      });
-      document.body.addEventListener('click', (e) => {
-        if (!e.target.closest('.hamburger') && !e.target.closest('.mobile-tabs-dropdown')) {
-          mobileDropdown.style.display = 'none';
-        }
-      });
-      mobileDropdown.querySelectorAll('.dropdown-item').forEach(item => {
-        item.addEventListener('click', () => {
-          window.router?.switchTab(item.dataset.tab, true);
-          mobileDropdown.style.display = 'none';
-        });
-      });
-      // Desktop tabs: delegate click handling here so router is the single source of truth
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-          window.router?.switchTab(tab.dataset.tab, true);
-        });
-      });
-    }
-  });
-
-  // Helper to get tab name from hash
-  function getTabFromHash() {
-    const hash = window.location.hash.replace(/^#/, '');
-    // Default to 'map' if no hash or unknown tab
-    const validTabs = ['map', 'about', 'funding', 'methods'];
-    return validTabs.includes(hash) ? hash : 'map';
+    onViewChange?.(view);
+    document.dispatchEvent(new CustomEvent('viewchange', {detail: {name: view}}));
   }
 
-  // Listen for hash changes and load the correct tab
-  window.addEventListener('hashchange', () => {
-    window.router.switchTab(getTabFromHash(), false);
+  document.querySelectorAll('[data-view]').forEach((element) => {
+    element.addEventListener('click', () => show(element.dataset.view));
   });
 
-  // On initial load, switch to the tab in the hash
-  document.addEventListener('DOMContentLoaded', () => {
-    window.router.switchTab(getTabFromHash(), false);
+  menuButton.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const opening = mobileMenu.hidden;
+    mobileMenu.hidden = !opening;
+    menuButton.setAttribute('aria-expanded', String(opening));
   });
 
-  return window.router;
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('#menu-button, #mobile-menu')) closeMenu();
+  });
+
+  window.addEventListener('hashchange', () => show(viewFromHash(), {updateHash: false}));
+  show(viewFromHash(), {updateHash: false});
+
+  return {show};
 }

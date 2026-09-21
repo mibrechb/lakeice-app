@@ -1,487 +1,766 @@
 import { fetchCSV } from './utils/data.js';
 
+const DAY_MS = 86400000;
+const INITIAL_LIC_WINDOW_DAYS = 730;
+
+const LIC_MODEL_GROUPS = [
+  {
+    key:'s1',
+    label:'Sentinel-1',
+    symbol:'diamond',
+    color:'#5f7fd3',
+  },
+  {
+    key:'s2',
+    label:'Sentinel-2',
+    symbol:'circle',
+    color:'#8ccc7c',
+  },
+  {
+    key:'landsat',
+    label:'Landsat',
+    symbol:'triangle',
+    color:'#f2c45e',
+  },
+  {
+    key:'ecostress',
+    label:'ECOSTRESS',
+    symbol:'rect',
+    color:'#ef7474',
+  },
+];
+
+const LIC_MARKER_SIZE = 9;
+const resizeObservers = new WeakMap();
+
 export function safeDisposeEChart(el) {
-  /** Safely disposes an ECharts 
-   * instance attached to the given DOM element. */
-  if (!el || !document.body.contains(el)) return;
+  /** Safely dispose an ECharts instance and its ResizeObserver. */
+  if (!el) return;
+
+  resizeObservers.get(el)?.disconnect();
+  resizeObservers.delete(el);
+
   const chart = echarts.getInstanceByDom(el);
   if (chart) {
     try {
       chart.dispose();
-    } catch (err) {
-      // console.log('Error disposing chart:', err);
+    } catch (_) {
+      // The panel DOM may already have been replaced.
     }
   }
 }
 
-function cssVar(name, fallback) {
-  /** Get CSS variable value. */
-  const value = getComputedStyle(document.body).getPropertyValue(name).trim();
-  if (!value) {
-    console.warn(`CSS variable ${name} is missing, using fallback: ${fallback}`);
+function observeChartResize(el, chart) {
+  resizeObservers.get(el)?.disconnect();
+
+  const observer = new ResizeObserver(() => {
+    if (!chart.isDisposed()) chart.resize();
+  });
+  observer.observe(el);
+  resizeObservers.set(el, observer);
+}
+
+function cssVar(name, fallback = '') {
+  const style = getComputedStyle(document.body);
+  let value = style.getPropertyValue(name).trim();
+
+  // Compatibility with older plotting code.
+  if (!value && name === '--boxfill') {
+    value = style.getPropertyValue('--chart-bg').trim();
   }
+
   return value || fallback;
 }
 
-function computeYearlyStats(ts) {
-  /** Compute yearly statistics timeseries data. */
-  const byDay = {};
-  ts.forEach(r => {
-    const date = new Date(r.dt64);
-    const doy = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 86400000);
-    if (!byDay[doy]) byDay[doy] = [];
-    byDay[doy].push(+r.lic);
-  });
-  const stats = [];
-  for (let doy = 1; doy <= 366; doy++) {
-    const vals = byDay[doy] || [];
-    if (vals.length === 0) continue;
-    vals.sort((a, b) => a - b);
-    const p = q => vals[Math.floor(q * vals.length)];
-    const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
-    stats.push({
-      doy,
-      mean,
-      min: vals[0],
-      max: vals[vals.length - 1],
-      p5: p(0.05),
-      p25: p(0.25),
-      p75: p(0.75),
-      p95: p(0.95)
-    });
-  }
-  return stats;
+function numberOrNull(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
 }
 
-function toUTC(dt) {
-  // Accepts a date string or Date object, returns UTC timestamp (ms)
-  if (!dt) return NaN;
-  const d = typeof dt === 'string' ? new Date(dt) : dt;
-  return Date.UTC(
-    d.getUTCFullYear(),
-    d.getUTCMonth(),
-    d.getUTCDate(),
-    d.getUTCHours(),
-    d.getUTCMinutes(),
-    d.getUTCSeconds(),
-    d.getUTCMilliseconds()
+function dateToUTC(value) {
+  if (!value) return NaN;
+
+  const timestamp = Date.parse(
+    `${String(value).slice(0, 10)}T00:00:00Z`,
+  );
+  return Number.isFinite(timestamp) ? timestamp : NaN;
+}
+
+function percent(value, digits = 1) {
+  return Number.isFinite(value)
+    ? `${value.toFixed(digits)}%`
+    : '—';
+}
+
+function quantile(sortedValues, q) {
+  if (!sortedValues.length) return null;
+  if (sortedValues.length === 1) return sortedValues[0];
+
+  const position = (sortedValues.length - 1) * q;
+  const lower = Math.floor(position);
+  const upper = Math.ceil(position);
+
+  if (lower === upper) return sortedValues[lower];
+
+  const fraction = position - lower;
+  return (
+    sortedValues[lower] +
+    (sortedValues[upper] - sortedValues[lower]) * fraction
   );
 }
 
-function renderYearlyPercentilePlot(el, ts, opts={}) {
-  /** Render aggregated yearly lake ice cover percentile plot. */
-  if (!el) return;
-  safeDisposeEChart(el);
-  const chart = echarts.init(el, null, { renderer: 'canvas' });
+function normalizeLicData(rows) {
+  /**
+   * Convert the wide Stage-1 / Stage-2 CSV into plotting-oriented data.
+   *
+   * Stage 1 = sparse satellite-observation estimates.
+   * Stage 2 = daily harmonized/interpolated estimate.
+   */
+  const observations = Object.fromEntries(
+    LIC_MODEL_GROUPS.map(({key}) => [key, []]),
+  );
+  const harmonized = [];
+  const harmonizedByTimestamp = new Map();
 
-  const stats = computeYearlyStats(ts);
-  if (!stats.length) return;
-  const years = ts.map(r => new Date(r.dt64).getUTCFullYear());
+  for (const row of rows) {
+    const timestamp = dateToUTC(row.date);
+    if (!Number.isFinite(timestamp)) continue;
 
-  function shiftedDate(doy) {
-    if (doy < 214) return new Date(Date.UTC(2000, 0, doy + 365));
-    return new Date(Date.UTC(2000, 0, doy));
-  }
-  const x = stats.map(p => shiftedDate(p.doy));
-  let xCats = x.map(d => d.toISOString());
+    for (const model of LIC_MODEL_GROUPS) {
+      const cover = numberOrNull(
+        row[`${model.key}_ice_cover`],
+      );
+      if (cover === null) continue;
 
-  // Define y-data arrays FIRST
-  let mean = stats.map(p => p.mean);
-  let min = stats.map(p => p.min);
-  let max = stats.map(p => p.max);
-  let p5 = stats.map(p => p.p5);
-  let p25 = stats.map(p => p.p25);
-  let p75 = stats.map(p => p.p75);
-  let p95 = stats.map(p => p.p95);
-
-  // Offset xCats so it starts at August 1
-  const augIdx = xCats.findIndex(s => {
-    const d = new Date(s);
-    return d.getUTCMonth() === 7 && d.getUTCDate() === 1;
-  });
-  if (augIdx > 0) {
-    xCats = xCats.slice(augIdx).concat(xCats.slice(0, augIdx));
-    // Rotate all y-data arrays to match xCats
-    function rotate(arr) {
-      return arr.slice(augIdx).concat(arr.slice(0, augIdx));
+      observations[model.key].push({
+        value:[timestamp, cover],
+        timestamp,
+        cover,
+        probability:numberOrNull(
+          row[`${model.key}_ice_probability`],
+        ),
+        coverage:numberOrNull(
+          row[`${model.key}_data_coverage`],
+        ),
+        modelKey:model.key,
+        modelLabel:model.label,
+      });
     }
-    mean = rotate(mean);
-    min = rotate(min);
-    max = rotate(max);
-    p5 = rotate(p5);
-    p25 = rotate(p25);
-    p75 = rotate(p75);
-    p95 = rotate(p95);
+
+    const stage2Cover = numberOrNull(row.stage2_ice_cover);
+    if (stage2Cover !== null) {
+      const point = {
+        value:[timestamp, stage2Cover],
+        timestamp,
+        cover:stage2Cover,
+        probability:numberOrNull(
+          row.stage2_ice_probability,
+        ),
+        coverage:numberOrNull(
+          row.stage2_data_coverage,
+        ),
+      };
+
+      harmonized.push(point);
+      harmonizedByTimestamp.set(timestamp, point);
+    }
   }
 
-  const isDark = !document.body.classList.contains('theme-light');
-  const axisColor = cssVar('--text');
-  const textColor = cssVar('--text');
-  const bgColor = cssVar('--boxfill');
-  const lineCol = cssVar('--accent');
-  const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
-  const darkGrey = isDark ? '#334155' : '#64748b';
-  const lightGrey = isDark ? '#64748b' : '#cbd5e1';
+  for (const points of Object.values(observations)) {
+    points.sort((a, b) => a.timestamp - b.timestamp);
+  }
+  harmonized.sort((a, b) => a.timestamp - b.timestamp);
 
-  // Helper for tick/grid/label intervals
-  const isFirstOfMonthIdx = (idx) => {
-    const d = new Date(xCats[idx]);
-    return d.getUTCDate() === 1;
+  return {
+    observations,
+    harmonized,
+    harmonizedByTimestamp,
   };
-
-  const xAxisCfg = {
-    type: 'category',
-    data: xCats,
-    boundaryGap: false,
-    axisLine: { lineStyle: { color: axisColor } },
-    axisLabel: {
-      color: textColor,
-      hideOverlap: true,
-      showMinLabel: true,
-      showMaxLabel: false,
-      interval: 0, // <-- Show every  label, then filter with formatter
-      formatter: (value) => {
-        const d = new Date(value);
-        return d.getUTCDate() === 1
-          ? d.toLocaleString('en-US', { month: 'short' })
-          : '';
-      }
-    },
-    axisTick: {
-      show: true,
-      alignWithLabel: true,
-      length: 6,
-      interval: (idx) => isFirstOfMonthIdx(idx)
-    },
-    splitLine: {
-      show: true,
-      lineStyle: { color: gridColor },
-      interval: (idx) => isFirstOfMonthIdx(idx)
-    }
-  };
-
-  chart.setOption({
-    backgroundColor: bgColor,
-    title: {
-      text: `Average Ice Year (${Math.min(...years)}–${Math.max(...years)})`,
-      left: 'center',
-      textStyle: { color: textColor, fontSize: 14 }
-    },
-    legend: {
-      top: 25,
-      left: 'center',
-      orient: 'horizontal',
-      textStyle: { color: textColor },
-      show: true
-    },
-    grid: [{ top: 65, right: 10, bottom: 40, left: 52 }],
-    xAxis: [xAxisCfg],
-    yAxis: [{
-      type: 'value',
-      name: 'Lake Ice Cover (%)',
-      nameLocation: 'middle',
-      nameGap: 36,
-      min: 0,
-      max: 100,
-      axisLine: { lineStyle: { color: axisColor } },
-      axisLabel: { color: textColor },
-      splitLine: { show: true, lineStyle: { color: gridColor } }
-    }],
-    tooltip: {
-      trigger: 'axis',
-      valueFormatter: v => (v == null ? '' : Number(v).toFixed(2))
-    },
-    series: [
-      // {
-      //   type: 'line',
-      //   name: '5–95%',
-      //   data: p95,
-      //   lineStyle: { width: 0 },
-      //   showSymbol: false,
-      //   areaStyle: { color: lightGrey, opacity: 0.25 },
-      //   z: 0,
-      //   symbol: 'rect',
-      //   showInLegend: true,
-      //   itemStyle: { color: lightGrey }
-      // },
-      // {
-      //   type: 'line',
-      //   data: p5,
-      //   lineStyle: { width: 0 },
-      //   showSymbol: false,
-      //   areaStyle: { color: bgColor, opacity: 1 },
-      //   z: 0,
-      //   showInLegend: false
-      // },
-      // {
-      //   type: 'line',
-      //   name: '25–75%',
-      //   data: p75,
-      //   lineStyle: { width: 0 },
-      //   showSymbol: false,
-      //   areaStyle: { color: darkGrey, opacity: 0.35 },
-      //   z: 1,
-      //   symbol: 'rect',
-      //   showInLegend: true,
-      //   itemStyle: { color: darkGrey }
-      // },
-      // {
-      //   type: 'line',
-      //   data: p25,
-      //   lineStyle: { width: 0 },
-      //   showSymbol: false,
-      //   areaStyle: { color: bgColor, opacity: 1 },
-      //   z: 1,
-      //   showInLegend: false
-      // },
-      {
-        type: 'line',
-        name: 'Min',
-        data: min,
-        lineStyle: { width: 1, color: '#000' },
-        showSymbol: false,
-        z: 2,
-        symbol: 'line',
-        showInLegend: true,
-        itemStyle: { color: '#000' }
-      },
-      {
-        type: 'line',
-        name: 'Max',
-        data: max,
-        lineStyle: { width: 1, color: '#000' },
-        showSymbol: false,
-        z: 2,
-        symbol: 'line',
-        showInLegend: true,
-        itemStyle: { color: '#000' }
-      },
-      {
-        type: 'line',
-        name: 'Mean',
-        data: mean,
-        lineStyle: { width: 2, color: lineCol },
-        showSymbol: false,
-        z: 3,
-        symbol: 'line',
-        showInLegend: true,
-        itemStyle: { color: lineCol }
-      }
-    ],
-    toolbox: {
-      show: true,
-      feature: {
-        saveAsImage: {
-          show: true,
-          title: 'Export',
-          pixelRatio: 3,
-          name: `lic_avg_${opts.lakeId}`
-        }
-      },
-      right: 10,
-      top: 10
-    },
-  }, true);
-
-  window.addEventListener('resize', () => chart.resize(), { passive: true });
 }
 
-function renderIceCoverPlot(el, ts, opts={}) {
-  if (!el) return;
+function licTimeExtent(data) {
+  const timestamps = [
+    ...data.harmonized.map(point => point.timestamp),
+    ...LIC_MODEL_GROUPS.flatMap(
+      model =>
+        data.observations[model.key].map(
+          point => point.timestamp,
+        ),
+    ),
+  ].filter(Number.isFinite);
+
+  if (!timestamps.length) return null;
+
+  const min = Math.min(...timestamps);
+  const max = Math.max(...timestamps);
+
+  return {
+    min,
+    max,
+    initialMin:Math.max(
+      min,
+      max - INITIAL_LIC_WINDOW_DAYS * DAY_MS,
+    ),
+  };
+}
+
+function licGridColor() {
+  return document.body.dataset.theme === 'dark'
+    ? 'rgba(255,255,255,.09)'
+    : 'rgba(0,0,0,.08)';
+}
+
+function formatStage1Tooltip(point, data) {
+  const date = echarts.format.formatTime(
+    'yyyy-MM-dd',
+    point.timestamp,
+  );
+  const harmonized =
+    data.harmonizedByTimestamp.get(point.timestamp);
+
+  let html = `
+    <b>${point.modelLabel}</b>
+    <span style="opacity:.7">Stage 1</span><br>
+    ${date}<br>
+    Ice cover: <b>${percent(point.cover)}</b><br>
+    Ice probability: ${percent(point.probability)}<br>
+    Data coverage: ${percent(point.coverage)}
+  `;
+
+  if (harmonized) {
+    html += `
+      <div style="
+        margin-top:7px;
+        padding-top:6px;
+        border-top:1px solid rgba(127,127,127,.35);
+      ">
+        <b>Harmonized daily</b>
+        <span style="opacity:.7">Stage 2</span><br>
+        Ice cover: <b>${percent(harmonized.cover)}</b><br>
+        Ice probability: ${percent(harmonized.probability)}
+      </div>
+    `;
+  }
+
+  return html;
+}
+
+function formatStage2Tooltip(point) {
+  const date = echarts.format.formatTime(
+    'yyyy-MM-dd',
+    point.timestamp,
+  );
+
+  return `
+    <b>Harmonized daily</b>
+    <span style="opacity:.7">Stage 2</span><br>
+    ${date}<br>
+    Ice cover: <b>${percent(point.cover)}</b><br>
+    Ice probability: ${percent(point.probability)}<br>
+    Data coverage: ${percent(point.coverage)}
+  `;
+}
+
+function buildStage2Climatology(harmonized) {
+  /**
+   * Pool Stage-2 daily values by seasonal calendar day.
+   * The seasonal axis runs Sep 1 -> Aug 31.
+   *
+   * A leap-year reference is used so Feb 29 has its own slot.
+   */
+  const byMonthDay = new Map();
+
+  for (const point of harmonized) {
+    const date = new Date(point.timestamp);
+    const key = [
+      String(date.getUTCMonth() + 1).padStart(2, '0'),
+      String(date.getUTCDate()).padStart(2, '0'),
+    ].join('-');
+
+    if (!byMonthDay.has(key)) byMonthDay.set(key, []);
+    byMonthDay.get(key).push(point.cover);
+  }
+
+  // Sep 1, 1999 -> Aug 31, 2000 includes Feb 29.
+  const start = Date.UTC(1999, 8, 1);
+  const end = Date.UTC(2000, 7, 31);
+
+  const days = [];
+  for (
+    let timestamp = start;
+    timestamp <= end;
+    timestamp += DAY_MS
+  ) {
+    const date = new Date(timestamp);
+    const key = [
+      String(date.getUTCMonth() + 1).padStart(2, '0'),
+      String(date.getUTCDate()).padStart(2, '0'),
+    ].join('-');
+
+    const values = [...(byMonthDay.get(key) || [])]
+      .filter(Number.isFinite)
+      .sort((a, b) => a - b);
+
+    days.push({
+      key,
+      timestamp,
+      count:values.length,
+      p05:quantile(values, .05),
+      p25:quantile(values, .25),
+      median:quantile(values, .50),
+      p75:quantile(values, .75),
+      p95:quantile(values, .95),
+    });
+  }
+
+  return days;
+}
+
+function renderIceCoverPlot(el, data, opts = {}) {
+  if (!el) return null;
+
   safeDisposeEChart(el);
-  const chart = echarts.init(el, null, { renderer: 'canvas' });
+  const chart = echarts.init(
+    el,
+    null,
+    {renderer:'canvas'},
+  );
+  const extent = licTimeExtent(data);
 
-  // Prepare data with sensortype
-  const sensortype = r => r.sensor === 'Sentinel-1' ? 'radar' : 'optical/thermal';
-  const data = ts.map(r => [
-    toUTC(r.dt64),
-    Number(r.lic),
-    r.sensor,
-    sensortype(r)
-  ]).filter(row => Number.isFinite(row[0]) && Number.isFinite(row[1]));
-  data.sort((a, b) => a[0] - b[0]);
-  console.log('Data points:', data.length);
+  if (!extent || !data.harmonized.length) {
+    chart.dispose();
+    el.innerHTML =
+      '<div style="padding:24px;text-align:center;">No lake ice cover data available.</div>';
+    return null;
+  }
 
-  // Find years and timestamps for initial zoom
-  const years = ts.map(r => new Date(r.dt64).getUTCFullYear());
-  const maxYear = Math.max(...years);
-  const minYear = maxYear - 2;
-  const allTimestamps = data.map(row => row[0]);
-  const minZoomTs = allTimestamps.find(ts => {
-    const y = new Date(ts).getUTCFullYear();
-    return y >= minYear;
-  }) ?? allTimestamps[0];
-  const maxZoomTs = allTimestamps[allTimestamps.length - 1];
+  const axisColor = cssVar('--muted', '#6d7b84');
+  const textColor = cssVar('--text', '#25323b');
+  const bgColor = cssVar('--chart-bg', '#ffffff');
+  const iceFill = cssVar('--accent', '#1597c5');
+  const iceStroke = cssVar(
+    '--panel-lake-icon-color',
+    cssVar('--accent-strong', '#08769e'),
+  );
+
+  const legendData = [
+    {
+      name:'Harmonized daily',
+      icon:'path://M0 4 H24 V6 H0 Z',
+    },
+    ...LIC_MODEL_GROUPS.map(model => ({
+      name:model.label,
+      icon:model.symbol,
+    })),
+  ];
+
+  const stage1Series = LIC_MODEL_GROUPS.map(model => ({
+    name:model.label,
+    type:'scatter',
+    xAxisIndex:0,
+    yAxisIndex:0,
+    data:data.observations[model.key],
+    symbol:model.symbol,
+    symbolSize:LIC_MARKER_SIZE,
+    itemStyle:{
+      color:model.color,
+      borderColor:bgColor,
+      borderWidth:1.25,
+      opacity:.96,
+    },
+    emphasis:{
+      scale:1.45,
+      itemStyle:{
+        borderColor:textColor,
+        borderWidth:1.5,
+      },
+    },
+    z:6,
+    clip:true,
+  }));
 
   chart.setOption({
-    backgroundColor: cssVar('--boxfill'),
-    title: { text: `Lake Ice Coverage (${Math.min(...years)}–${maxYear})`, left: 'center', textStyle: { color: cssVar('--text'), fontSize: 14 } },
-    legend: {
-      top: 25,
-      left: 'center',
-      orient: 'horizontal',
-      textStyle: { color: cssVar('--text') },
-      show: true
+    backgroundColor:bgColor,
+    animation:false,
+    legend:{
+      top:8,
+      left:'center',
+      orient:'horizontal',
+      itemWidth:LIC_MARKER_SIZE,
+      itemHeight:LIC_MARKER_SIZE,
+      itemGap:14,
+      textStyle:{color:textColor},
+      data:legendData,
     },
-    dataset: [{
-      dimensions: ['timestamp', 'value', 'sensor', 'sensortype'],
-      source: data
-    }],
-    grid: [
-      { top: 65, right: 10, bottom: 145, left: 52 },
-      { height: 35, left: 52, right: 10, bottom: 75 }
-    ],
-    xAxis: [
-      { type: 'time', gridIndex: 0, boundaryGap: false,
-        axisLine: { lineStyle: { color: cssVar('--muted') } },
-        axisLabel: { color: cssVar('--text') },
-        splitLine: { show: true, lineStyle: { color: 'rgba(0,0,0,0.08)' } } },
-      { type: 'time', gridIndex: 1, boundaryGap: false,
-        axisLine: { lineStyle: { color: cssVar('--muted') } },
-        axisLabel: { color: cssVar('--text'), formatter: '{yyyy}' },
-        splitLine: { show: true, lineStyle: { color: 'rgba(0,0,0,0.08)' } } }
-    ],
-    yAxis: [
-      {
-        type: 'value',
-        gridIndex: 0,
-        name: 'Lake Ice Cover (%)',
-        nameLocation: 'middle',
-        nameGap: 36,
-        min: 0,
-        max: 100.1,
-        axisLine: { lineStyle: { color: cssVar('--muted') } },
-        axisLabel: { color: cssVar('--text') },
-        splitLine: { show: true, lineStyle: { color: 'rgba(0,0,0,0.08)' } }
-      },
-      { type: 'value', gridIndex: 1, show: false }
-    ],
-    tooltip: {
-      trigger: 'item',
-      formatter: function(params) {
-        // params.data: [timestamp, value, sensor, sensortype]
-        const date = echarts.format.formatTime('yyyy-MM-dd', params.data[0]);
-        const value = params.data[1];
-        const sensor = params.data[2];
-        return `
-          <b>${params.seriesName}</b><br>
-          Sensor: ${sensor}<br>
-          Date: ${date}<br>
-          Ice Cover: ${value.toFixed(2)}%
-        `;
-      }
+    grid:{
+      top:44,
+      right:14,
+      bottom:72,
+      left:54,
     },
-    dataZoom: [
-      {
-        type: 'inside',
-        xAxisIndex: 0,
-        filterMode: 'none',
-        startValue: minZoomTs,
-        endValue: maxZoomTs
+    xAxis:{
+      type:'time',
+      boundaryGap:false,
+      min:extent.min,
+      max:extent.max,
+      axisLine:{
+        lineStyle:{color:axisColor},
       },
-      {
-        type: 'slider',
-        xAxisIndex: 0,
-        height: 28,
-        bottom: 20,
-        showDataShadow: false,
-        borderColor: 'transparent',
-        backgroundColor: 'rgba(0,0,0,0.04)',
-        fillerColor: 'rgba(14,165,233,0.25)',
-        handleSize: 14,
-        textStyle: { color: cssVar('--text') },
-        startValue: minZoomTs,
-        endValue: maxZoomTs
-      }
-    ],
-    series: [
-      {
-        type: 'line',
-        name: 'Ice cover',
-        xAxisIndex: 0,
-        yAxisIndex: 0,
-        symbol: 'line',
-        showSymbol: false,
-        smooth: false,
-        connectNulls: true,
-        clip: true,
-        encode: { x: 'timestamp', y: 'value' },
-        lineStyle: { width: 2, color: cssVar('--accent') },
-        areaStyle: { color: !document.body.classList.contains('theme-light') ? 'rgba(56,189,248,0.18)' : 'rgba(14,165,233,0.18)' },
-        z: 1
+      axisLabel:{color:textColor},
+      splitLine:{
+        show:true,
+        lineStyle:{color:licGridColor()},
       },
-      {
-        type: 'scatter',
-        name: 'radar',
-        xAxisIndex: 0,
-        yAxisIndex: 0,
-        encode: { x: 'timestamp', y: 'value', tooltip: ['sensor', 'timestamp', 'value'] },
-        datasetIndex: 0,
-        symbol: 'diamond',
-        symbolSize: 4,
-        borderColor: cssVar('--border'),
-        borderWidth: 1,
-        itemStyle: { 
-          color: !document.body.classList.contains('theme-light') ? 'black' : 'white',
-          borderColor: cssVar('--text'),
-          borderWidth: 1
-        },        
-        z: 2,
-        clip: true,
-        data: data.filter(row => row[3] === 'radar')
+    },
+    yAxis:{
+      type:'value',
+      name:'Lake Ice Cover (%)',
+      nameLocation:'middle',
+      nameGap:38,
+      min:0,
+      max:100,
+      axisLine:{
+        lineStyle:{color:axisColor},
       },
-      {
-        type: 'scatter',
-        name: 'optical/thermal',
-        xAxisIndex: 0,
-        yAxisIndex: 0,
-        encode: { x: 'timestamp', y: 'value', tooltip: ['sensor', 'timestamp', 'value'] },
-        datasetIndex: 0,
-        symbol: 'circle',
-        symbolSize: 4,
-        itemStyle: { 
-          color: !document.body.classList.contains('theme-light') ? 'black' : 'white',
-          borderColor: cssVar('--text'),
-          borderWidth: 1
-        },
-        z: 2,
-        clip: true,
-        data: data.filter(row => row[3] === 'optical/thermal')
+      axisLabel:{color:textColor},
+      splitLine:{
+        show:true,
+        lineStyle:{color:licGridColor()},
       },
-      // Miniview area plot
-      {
-        type: 'line',
-        xAxisIndex: 1,
-        yAxisIndex: 1,
-        symbol: 'none',
-        showSymbol: false,
-        showInLegend: false, // Hide from legend
-        legendHoverLink: false, // Prevent hover effect in legend
-        smooth: true,
-        connectNulls: true,
-        clip: true,
-        encode: { x: 'timestamp', y: 'value' },
-        lineStyle: { width: 1, color: cssVar('--accent') },
-        areaStyle: { color: cssVar('--accent'), opacity: 0.18 },
-        z: 0
-      }
-    ],
-    toolbox: {
-      show: true,
-      feature: {
-        saveAsImage: {
-          show: true,
-          title: 'Export',
-          pixelRatio: 3,
-          name: `lic_${opts.lakeId}`
+    },
+    tooltip:{
+      trigger:'item',
+      confine:true,
+      formatter(params) {
+        if (params.seriesName === 'Harmonized daily') {
+          return formatStage2Tooltip(params.data);
         }
+        return formatStage1Tooltip(params.data, data);
       },
-      right: 10,
-      top: 10
+    },
+    dataZoom:[
+      {
+        type:'inside',
+        xAxisIndex:0,
+        filterMode:'none',
+        startValue:extent.initialMin,
+        endValue:extent.max,
+      },
+      {
+        type:'slider',
+        xAxisIndex:0,
+        height:24,
+        bottom:18,
+        filterMode:'none',
+        showDataShadow:false,
+        borderColor:'transparent',
+        backgroundColor:'rgba(127,127,127,.08)',
+        fillerColor:'rgba(21,151,197,.22)',
+        handleSize:13,
+        textStyle:{color:textColor},
+        startValue:extent.initialMin,
+        endValue:extent.max,
+      },
+    ],
+    series:[
+      {
+        name:'Harmonized daily',
+        type:'line',
+        data:data.harmonized,
+        symbol:'none',
+        showSymbol:false,
+        connectNulls:false,
+        smooth:false,
+        clip:true,
+        lineStyle:{
+          width:2.5,
+          color:iceStroke,
+        },
+        itemStyle:{color:iceStroke},
+        areaStyle:{
+          color:iceFill,
+          opacity:.18,
+        },
+        z:2,
+      },
+      ...stage1Series,
+    ],
+    toolbox:{
+      show:true,
+      feature:{
+        saveAsImage:{
+          show:true,
+          title:'export',
+          pixelRatio:3,
+          name:`lic_${opts.lakeId}`,
+        },
+      },
+      right:8,
+      top:2,
     },
   }, true);
 
-  window.addEventListener('resize', () => chart.resize(), { passive: true });
+  observeChartResize(el, chart);
+  return chart;
+}
+
+function renderStage2ClimatologyPlot(el, data, opts = {}) {
+  if (!el) return null;
+
+  safeDisposeEChart(el);
+  const chart = echarts.init(
+    el,
+    null,
+    {renderer:'canvas'},
+  );
+
+  const climatology = buildStage2Climatology(
+    data.harmonized,
+  );
+
+  if (!climatology.some(day => day.count > 0)) {
+    chart.dispose();
+    el.innerHTML =
+      '<div style="padding:24px;text-align:center;">No harmonized climatology available.</div>';
+    return null;
+  }
+
+  const textColor = cssVar('--text', '#25323b');
+  const axisColor = cssVar('--muted', '#6d7b84');
+  const bgColor = cssVar('--chart-bg', '#ffffff');
+  const iceFill = cssVar('--accent', '#1597c5');
+  const iceStroke = cssVar(
+    '--panel-lake-icon-color',
+    cssVar('--accent-strong', '#08769e'),
+  );
+
+  const categories = climatology.map(day =>
+    new Date(day.timestamp).toISOString(),
+  );
+
+  const p05 = climatology.map(day => day.p05);
+  const p25 = climatology.map(day => day.p25);
+  const median = climatology.map(day => day.median);
+  const p75MinusP25 = climatology.map(day =>
+    day.p25 === null || day.p75 === null
+      ? null
+      : day.p75 - day.p25,
+  );
+  const p95MinusP05 = climatology.map(day =>
+    day.p05 === null || day.p95 === null
+      ? null
+      : day.p95 - day.p05,
+  );
+
+  function monthLabel(value) {
+    const date = new Date(value);
+    return date.getUTCDate() === 1
+      ? date.toLocaleString(
+          'en-US',
+          {month:'short', timeZone:'UTC'},
+        )
+      : '';
+  }
+
+  function isMonthStart(index) {
+    const date = new Date(categories[index]);
+    return date.getUTCDate() === 1;
+  }
+
+  chart.setOption({
+    backgroundColor:bgColor,
+    animation:false,
+    legend:{
+      top:8,
+      left:'center',
+      itemWidth:10,
+      itemHeight:8,
+      itemGap:18,
+      textStyle:{color:textColor},
+      data:[
+        {
+          name:'Median',
+          icon:'path://M0 4 H24 V6 H0 Z',
+        },
+        {
+          name:'25–75%',
+          icon:'rect',
+        },
+        {
+          name:'5–95%',
+          icon:'rect',
+        },
+      ],
+    },
+    grid:{
+      top:44,
+      right:14,
+      bottom:38,
+      left:54,
+    },
+    xAxis:{
+      type:'category',
+      data:categories,
+      boundaryGap:false,
+      axisLine:{
+        lineStyle:{color:axisColor},
+      },
+      axisLabel:{
+        color:textColor,
+        interval:0,
+        formatter:monthLabel,
+      },
+      axisTick:{
+        show:true,
+        alignWithLabel:true,
+        interval:index => isMonthStart(index),
+      },
+      splitLine:{
+        show:true,
+        interval:index => isMonthStart(index),
+        lineStyle:{color:licGridColor()},
+      },
+    },
+    yAxis:{
+      type:'value',
+      name:'Lake Ice Cover (%)',
+      nameLocation:'middle',
+      nameGap:38,
+      min:0,
+      max:100,
+      axisLine:{
+        lineStyle:{color:axisColor},
+      },
+      axisLabel:{color:textColor},
+      splitLine:{
+        show:true,
+        lineStyle:{color:licGridColor()},
+      },
+    },
+    tooltip:{
+      trigger:'axis',
+      confine:true,
+      formatter(params) {
+        if (!params.length) return '';
+
+        const index = params[0].dataIndex;
+        const day = climatology[index];
+        const date = new Date(day.timestamp);
+        const label = date.toLocaleDateString(
+          'en-US',
+          {
+            month:'short',
+            day:'numeric',
+            timeZone:'UTC',
+          },
+        );
+
+        return `
+          <b>${label}</b><br>
+          Median: <b>${percent(day.median)}</b><br>
+          25–75%: ${percent(day.p25)} – ${percent(day.p75)}<br>
+          5–95%: ${percent(day.p05)} – ${percent(day.p95)}<br>
+          Seasons contributing: ${day.count}
+        `;
+      },
+    },
+    series:[
+      // Invisible lower boundary for the 5–95% stacked band.
+      {
+        name:'__p05',
+        type:'line',
+        stack:'outer-band',
+        data:p05,
+        symbol:'none',
+        showSymbol:false,
+        silent:true,
+        lineStyle:{width:0, opacity:0},
+        areaStyle:{opacity:0},
+        tooltip:{show:false},
+        z:0,
+      },
+      {
+        name:'5–95%',
+        type:'line',
+        stack:'outer-band',
+        data:p95MinusP05,
+        symbol:'none',
+        showSymbol:false,
+        silent:true,
+        lineStyle:{width:0, opacity:0},
+        areaStyle:{
+          color:iceFill,
+          opacity:.10,
+        },
+        itemStyle:{color:iceFill},
+        tooltip:{show:false},
+        z:0,
+      },
+
+      // Invisible lower boundary for the 25–75% stacked band.
+      {
+        name:'__p25',
+        type:'line',
+        stack:'inner-band',
+        data:p25,
+        symbol:'none',
+        showSymbol:false,
+        silent:true,
+        lineStyle:{width:0, opacity:0},
+        areaStyle:{opacity:0},
+        tooltip:{show:false},
+        z:1,
+      },
+      {
+        name:'25–75%',
+        type:'line',
+        stack:'inner-band',
+        data:p75MinusP25,
+        symbol:'none',
+        showSymbol:false,
+        silent:true,
+        lineStyle:{width:0, opacity:0},
+        areaStyle:{
+          color:iceFill,
+          opacity:.24,
+        },
+        itemStyle:{color:iceFill},
+        tooltip:{show:false},
+        z:1,
+      },
+      {
+        name:'Median',
+        type:'line',
+        data:median,
+        symbol:'none',
+        showSymbol:false,
+        connectNulls:false,
+        lineStyle:{
+          width:2.5,
+          color:iceStroke,
+        },
+        itemStyle:{color:iceStroke},
+        z:3,
+      },
+    ],
+    toolbox:{
+      show:true,
+      feature:{
+        saveAsImage:{
+          show:true,
+          title:'Export',
+          pixelRatio:3,
+          name:`lic_climatology_${opts.lakeId}`,
+        },
+      },
+      right:8,
+      top:2,
+    },
+  }, true);
+
+  observeChartResize(el, chart);
+  return chart;
 }
 
 function enableInstantTooltips(tableSelector = '.plot-lip-table') {
@@ -653,7 +932,7 @@ export function renderPhenologyIntervals(el, rows, opts={}) {
 
 
   chart.setOption({
-    backgroundColor: cssVar('--boxfill'),
+    backgroundColor: cssVar('--chart-bg', '#ffffff'),
     title: {
       text: 'Lake Ice Phenology',
       left: 'center',
@@ -784,19 +1063,35 @@ export function renderPhenologyIntervals(el, rows, opts={}) {
 }
 
 export async function renderLicPlots(lakeId) {
-  /** Render plots for lake ice cover tab. */
+  /** Render Stage-1 observations and Stage-2 lake-ice products. */
   console.log('Rendering LIC plots for lake:', lakeId);
+
+  const mainEl = document.getElementById('plot-lic-scatter');
+  const climatologyEl = document.getElementById('plot-lic-agg');
+
   try {
-    const ts = await fetchCSV(`./data/timeseries/${lakeId}.csv`);
-    console.log('Fetched timeseries:', ts);
-    renderIceCoverPlot(document.getElementById('plot-lic-scatter'), ts, {lakeId});
-    renderYearlyPercentilePlot(document.getElementById('plot-lic-agg'), ts, {lakeId});
+    const rows = await fetchCSV(
+      `./data/timeseries/${lakeId}.csv`,
+    );
+    const data = normalizeLicData(rows);
+
+    renderIceCoverPlot(mainEl, data, {lakeId});
+    renderStage2ClimatologyPlot(
+      climatologyEl,
+      data,
+      {lakeId},
+    );
   } catch (err) {
-    console.log('Error:', err);
-    document.getElementById('plot-lic-scatter').innerHTML =
-      '<div style="padding:24px;text-align:center;">No timeseries data available.</div>';
-    document.getElementById('plot-lic-agg').innerHTML =
-      '<div style="padding:24px;text-align:center;">No timeseries data available.</div>';
+    console.error('Error rendering LIC plots:', err);
+
+    if (mainEl) {
+      mainEl.innerHTML =
+        '<div style="padding:24px;text-align:center;">No timeseries data available.</div>';
+    }
+    if (climatologyEl) {
+      climatologyEl.innerHTML =
+        '<div style="padding:24px;text-align:center;">No timeseries data available.</div>';
+    }
   }
 }
 

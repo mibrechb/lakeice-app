@@ -1,106 +1,257 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>lakeice.eawag.ch</title>
-  <link rel="icon" type="image/png" href="data/favicon/favicon-96x96.png" sizes="96x96" />
-  <link rel="icon" type="image/svg+xml" href="data/favicon/favicon.svg" />
-  <link rel="shortcut icon" href="data/favicon/favicon.ico" />
-  <link rel="apple-touch-icon" sizes="180x180" href="data/favicon/apple-touch-icon.png" />
-  <link rel="manifest" href="data/favicon/site.webmanifest" />
-  <link rel="stylesheet" href="./css/styles.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css" />
-</head>
-<body class="theme-light">
-  <div id="app">
-    <div class="topbar" role="navigation" aria-label="Primary">
-      <div class="logo">
-        <img id="logoImg" src="./data/img/logo_dark.png" alt="Lake Ice Monitoring" style="height:36px;">
-      </div>
-      <div class="tabs">
-        <button class="tab active" data-tab="map" aria-current="page">Map</button>
-        <button class="tab" data-tab="about">About</button>
-        <button class="tab" data-tab="methods">Methods</button>
-      </div>  
-      <div class="hamburger" tabindex="0" aria-label="Open menu">
-        &#9776;
-      </div>
-      <div class="mobile-tabs-dropdown">
-        <div class="dropdown-item" data-tab="map">Map Viewer</div>
-        <div class="dropdown-item" data-tab="about">About</div>
-        <div class="dropdown-item" data-tab="methods">Methods</div>
-      </div>
-    </div>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>Lake Ice Explorer</title>
 
-    <div class="content">
-      <!-- Map view -->
+  <link rel="icon" type="image/png" href="data/favicon/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/svg+xml" href="data/favicon/favicon.svg">
+  <link rel="shortcut icon" href="data/favicon/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="data/favicon/apple-touch-icon.png">
+  <link rel="manifest" href="data/favicon/site.webmanifest">
+
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css">
+  <link rel="stylesheet" href="./css/styles.css?v=7">
+</head>
+<body data-theme="light">
+  <main id="app">
+    <header class="top-bar">
+      <button id="brand-home" class="brand" type="button" aria-label="Open map">
+        <img id="logoImg" src="./data/img/logo_light.png" alt="Lake Ice Explorer">
+      </button>
+
+      <nav class="desktop-navigation" aria-label="Primary navigation">
+        <button class="tab active" data-view="map" type="button">Map</button>
+        <button class="tab" data-view="about" type="button">About</button>
+        <button class="tab" data-view="methods" type="button">Methods</button>
+      </nav>
+
+      <div class="top-bar-actions">
+        <a
+          class="github-link"
+          href="https://github.com/mibrechb/lakeice-app"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="View Lake Ice Explorer on GitHub"
+          title="View source on GitHub"
+        >
+          <span class="ui-icon github-icon" aria-hidden="true"></span>
+        </a>
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
+          <span class="theme-toggle-thumb" aria-hidden="true"></span>
+          <span class="theme-toggle-option theme-toggle-option--light" aria-hidden="true">
+            <img src="./data/img/symbol_light.png" alt="">
+          </span>
+          <span class="theme-toggle-option theme-toggle-option--dark" aria-hidden="true">
+            <img src="./data/img/symbol_dark.png" alt="">
+          </span>
+        </button>
+        <button id="menu-button" class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open navigation">
+          <span aria-hidden="true">☰</span>
+        </button>
+      </div>
+
+      <nav id="mobile-menu" class="mobile-menu" aria-label="Mobile navigation" hidden>
+        <button data-view="map" type="button">Map</button>
+        <button data-view="about" type="button">About</button>
+        <button data-view="methods" type="button">Methods</button>
+      </nav>
+    </header>
+
+    <section id="map-view" class="app-view">
+      <div
+        id="preview-notice"
+        class="preview-notice"
+        role="status"
+        data-preview-only
+        
+      >
+        <strong data-preview-title>Data preview</strong>
+        <span data-preview-banner-message>Lake-ice outputs are currently being ingested. Data availability is subject to change.</span>
+      </div>
+
       <div id="map-container">
         <div class="search-bar-wrapper">
-          <input id="lakeSearch" class="awesomplete" type="text" placeholder="Search lake name..." autocomplete="off">
-          <div id="lakeSearchResults"></div>
+          <label class="sr-only" for="lakeSearch">Search lake name</label>
+          <input id="lakeSearch" class="awesomplete" type="search" placeholder="Search lake name…" autocomplete="off">
         </div>
-        <div id="map" role="application" aria-label="Lake map"></div>
+        <div id="map" role="application" aria-label="Lake ice map"></div>
       </div>
-      <!-- <div class="legend">Click a lake polygon to view details</div> -->
-      <!-- Slide-over / mobile full-screen panel -->
-      <aside id="panel" class="panel" role="dialog" aria-modal="true" aria-labelledby="panel-title">
-        <div class="panel-header">
-          <div class="panel-title" id="panel-title">Lake details</div>
-          <div>
-            <button id="closeBtn" class="close-btn" title="Close" aria-label="Close">✕</button>
-          </div>
-        </div>
-        <div class="panel-body">
-          <div class="panel-upper">
-            <!-- Metadata -->
-            <div id="lakeMeta" class="meta"></div>
-            <div class="hint" id="hint"></div>
-            <div class="plot-bookmark-selector">
-              <button class="plot-bookmark active" data-plot="lic">Lake Ice Cover</button>
-              <button class="plot-bookmark" data-plot="lip">Lake Ice Phenology</button>
+
+      <aside id="panel" class="panel" role="dialog" aria-modal="false" aria-labelledby="panel-title" aria-hidden="true">
+        <div class="panel-shell">
+          <header class="panel-header">
+            <div class="panel-heading">
+              <span class="ui-icon panel-lake-icon" aria-hidden="true"></span>
+              <div class="panel-heading-copy">
+                <span class="panel-kicker" id="panel-kicker">Lake identifier</span>
+                <h2 class="panel-title" id="panel-title">Lake details</h2>
+              </div>
             </div>
-          </div>
-          <!-- <div class="section-divider"></div> -->
-          <div class="panel-lower">
-            <div id="plot-lic-scatter" style="height:320px;margin-bottom:24px"></div>
-            <div id="plot-lic-agg" style="height:320px"></div>
-            <div id="plot-lip-scatter" style="display:none"></div>
-            <div id="plot-lip-table" style="display:none;margin-bottom:24px"></div>
+
+            <button id="closeBtn" class="close-btn" type="button" title="Close" aria-label="Close lake details">
+              <span class="ui-icon close-btn-icon close-btn-icon--close" aria-hidden="true"></span>
+              <span class="ui-icon close-btn-icon close-btn-icon--map" aria-hidden="true"></span>
+              <span class="close-btn-label">Back to map</span>
+            </button>
+          </header>
+
+          <div class="panel-body">
+            <div class="panel-upper">
+              <div id="lakeMeta" class="meta"></div>
+              <div class="hint" id="hint"></div>
+
+              <nav class="plot-bookmark-selector" aria-label="Lake information views">
+                <button class="plot-bookmark active" data-plot="lic" type="button">Lake Ice Cover</button>
+                <button class="plot-bookmark" data-plot="lip" type="button">Lake Ice Phenology</button>
+              </nav>
+            </div>
+
+            <div class="panel-lower">
+              <div id="plot-lic-scatter"></div>
+              <div id="plot-lic-agg"></div>
+              <div id="plot-lip-scatter" hidden></div>
+              <div id="plot-lip-table" hidden></div>
+            </div>
           </div>
         </div>
       </aside>
+    </section>
 
-      <!-- Static pages -->
-      <section id="about" class="static-page" aria-label="About"></section>
-      <section id="methods" class="static-page" aria-label="Methods"></section>
-      <section id="funding" class="static-page" aria-label="Funding"></section>
-    </div>
-  </div>
-  <button id="themeToggle" class="theme-toggle-switch" title="Toggle light/dark mode" aria-label="Toggle theme">
-    <span class="toggle-slider">
-      <span class="toggle-icon-bg light-bg">
-        <img src="./data/img/symbol_light.png" class="toggle-icon light-icon" alt="Light mode">
-      </span>
-      <span class="toggle-icon-bg dark-bg">
-        <img src="./data/img/symbol_dark.png" class="toggle-icon dark-icon" alt="Dark mode">
-      </span>
-    </span>
-  </button>
-  <img id="companyLogo" class="company-logo" src="./data/img/eawag_logo.png" alt="Eawag Logo">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
-  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <section id="page-view" class="app-view page-view" hidden>
+      <article id="page-content" class="page-host"></article>
+    </section>
+
+    <footer class="bottom-bar">
+      <div class="bottom-bar-text">
+        The lake ice framework and dataset was developed at Eawag as part of the
+        SOS-Water project under funding of the Swiss State Secretariat for
+        Education, Research and Innovation (SERI).
+      </div>
+
+      <a
+        class="bottom-bar-logo-link"
+        href="https://www.sos-water.eu"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Visit the SOS-Water project website"
+      >
+        <img
+          class="bottom-bar-logo sosw-logo"
+          src="./data/img/logo-sosw.png"
+          alt="SOS-Water"
+        >
+      </a>
+
+      <a
+        class="bottom-bar-logo-link"
+        href="https://www.eawag.ch/en/department/surf/main-focus/remote-sensing/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Visit Eawag Remote Sensing"
+      >
+        <img
+          class="bottom-bar-logo eawag-logo"
+          src="./data/img/eawag_logo.png"
+          alt="Eawag"
+        >
+      </a>
+
+      <div class="bottom-bar-theme-logo seri-logo">
+        <img
+          class="bottom-bar-logo theme-logo--light"
+          src="./data/img/funding_seri_light.png"
+          alt="SERI funding acknowledgement"
+        >
+        <img
+          class="bottom-bar-logo theme-logo--dark"
+          src="./data/img/funding_seri_dark.png"
+          alt="SERI funding acknowledgement"
+        >
+      </div>
+    </footer>
+
+    <dialog id="welcome-dialog" class="welcome-dialog" aria-labelledby="welcome-title">
+      <div class="welcome-content">
+        <button id="welcome-close" class="welcome-close" type="button" aria-label="Close welcome message">×</button>
+
+        <div class="welcome-copy">
+          <h1 id="welcome-title">Welcome to the Lake Ice Explorer</h1>
+          <p>
+            The Lake Ice Explorer is an interactive mapping application for exploring
+            multi-sensor satellite observations of lake ice derived with deep-learning
+            image classification.
+          </p>
+        </div>
+
+        <div
+          class="welcome-preview-notice"
+          data-preview-only
+          
+        >
+          <strong data-preview-title>Data preview</strong>
+          <span data-preview-dialog-message>Lake-ice outputs are currently being ingested and availability will change as processing continues. Lakes shown in grey do not currently have lake-ice results available.</span>
+        </div>
+
+        <div class="welcome-divider"></div>
+
+        <div class="welcome-project">
+          <a
+            href="https://www.sos-water.eu"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Visit the SOS-Water project website"
+          >
+            <img
+              src="./data/img/logo-sosw.png"
+              alt="SOS-Water project logo"
+            >
+          </a>
+          <p>
+            This tool was developed as part of the SOS-Water EU Horizon project.
+            Visit
+            <a
+              href="https://www.sos-water.eu"
+              target="_blank"
+              rel="noopener noreferrer"
+            >sos-water.eu</a>
+            to learn more about the project.
+          </p>
+        </div>
+
+        <div class="welcome-divider"></div>
+
+        <p class="welcome-instructions">
+          Explore lake ice cover and phenology across the European Alps. Select a lake
+          directly from the map, jump to a featured lake, or learn how the lake ice
+          observations and metrics are derived.
+        </p>
+
+        <div class="welcome-actions">
+          <button id="welcome-start" class="secondary-button" type="button">
+            Start exploring
+          </button>
+          <button id="welcome-lake" class="primary-button" type="button">
+            <span class="ui-icon welcome-lake-icon" aria-hidden="true"></span>
+            <span>Take me to a lake</span>
+          </button>
+          <button id="welcome-methods" class="secondary-button" type="button">
+            Learn about the methodology
+          </button>
+        </div>
+      </div>
+    </dialog>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
-  
-  <!-- Use maplibre and maptiler tiles -->
-  <script> window.USE_MAPLIBRE = false </script>
-  <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
-  <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
-  <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet/leaflet-maplibre-gl.js"></script>
-  <script type="module" src="js/app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+  <script type="module" src="./js/app.js?v=20260921-3"></script>
 </body>
 </html>

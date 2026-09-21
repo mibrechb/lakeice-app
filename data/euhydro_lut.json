@@ -69,7 +69,7 @@
     "OBJECT_ID": "IW35008326",
     "REX": "AT",
     "NAM": "UNK",
-    "NAM_OSM": "Großer Teich"
+    "NAM_OSM": "Grosser Teich"
   },
   {
     "OBJECT_ID": "IW35008327",
@@ -243,7 +243,7 @@
     "OBJECT_ID": "IW35007800",
     "REX": "AT",
     "NAM": "UNK",
-    "NAM_OSM": "Naßfeldspeicher"
+    "NAM_OSM": "Nassfeldspeicher"
   },
   {
     "OBJECT_ID": "IW35007809",
@@ -639,7 +639,7 @@
     "OBJECT_ID": "IW35007230",
     "REX": "AT",
     "NAM": "Strussnigteich",
-    "NAM_OSM": "Strußnigteich"
+    "NAM_OSM": "Strussnigteich"
   },
   {
     "OBJECT_ID": "IW35007234",
@@ -2493,7 +2493,7 @@
     "OBJECT_ID": "IW35015140",
     "REX": "DE",
     "NAM": "Alpsee",
-    "NAM_OSM": "Großer Alpsee"
+    "NAM_OSM": "Grosser Alpsee"
   },
   {
     "OBJECT_ID": "IW35015165",
@@ -3111,7 +3111,7 @@
     "OBJECT_ID": "IW35014838",
     "REX": "AT",
     "NAM": "UNK",
-    "NAM_OSM": "Weißsee"
+    "NAM_OSM": "Weisssee"
   },
   {
     "OBJECT_ID": "IW35014839",
@@ -3213,7 +3213,7 @@
     "OBJECT_ID": "IW35014821",
     "REX": "AT",
     "NAM": "Goesskarspeicher",
-    "NAM_OSM": "Ausgleichsspeicher Gößkar"
+    "NAM_OSM": "Ausgleichsspeicher Gösskar"
   },
   {
     "OBJECT_ID": "IW35014822",
@@ -3255,7 +3255,7 @@
     "OBJECT_ID": "IW35014828",
     "REX": "AT",
     "NAM": "UNK",
-    "NAM_OSM": "Vergrößsee"
+    "NAM_OSM": "Vergrösssee"
   },
   {
     "OBJECT_ID": "IW35014829",
@@ -6477,7 +6477,7 @@
     "OBJECT_ID": "IW35015390",
     "REX": "DE",
     "NAM": "Schlosssee",
-    "NAM_OSM": "Schloßsee"
+    "NAM_OSM": "Schlosssee"
   },
   {
     "OBJECT_ID": "IW35015391",
@@ -6591,7 +6591,7 @@
     "OBJECT_ID": "IW35016677",
     "REX": "AT",
     "NAM": "Weisssee Stausee",
-    "NAM_OSM": "Weißsee"
+    "NAM_OSM": "Weisssee"
   },
   {
     "OBJECT_ID": "IW35016680",
@@ -6609,7 +6609,7 @@
     "OBJECT_ID": "IW35016693",
     "REX": "AT",
     "NAM": "Diessbachstausee",
-    "NAM_OSM": "Dießbach-Stausee"
+    "NAM_OSM": "Diessbach-Stausee"
   },
   {
     "OBJECT_ID": "IW35016701",
@@ -6723,7 +6723,7 @@
     "OBJECT_ID": "IW35015297",
     "REX": "DE",
     "NAM": "UNK",
-    "NAM_OSM": "Hochstraßer See"
+    "NAM_OSM": "Hochstrasser See"
   },
   {
     "OBJECT_ID": "IW35015298",
@@ -6891,7 +6891,7 @@
     "OBJECT_ID": "IW35015292",
     "REX": "AT",
     "NAM": "Grosser Oedsee",
-    "NAM_OSM": "Großer Ödsee"
+    "NAM_OSM": "Grosser Ödsee"
   },
   {
     "OBJECT_ID": "IW35015294",
@@ -8151,7 +8151,7 @@
     "OBJECT_ID": "IW35015082",
     "REX": "AT",
     "NAM": "UNK",
-    "NAM_OSM": "Stausee Großsölk"
+    "NAM_OSM": "Stausee Grosssölk"
   },
   {
     "OBJECT_ID": "IW35015044",
@@ -8343,13 +8343,13 @@
     "OBJECT_ID": "IW35014961",
     "REX": "AT",
     "NAM": "UNK",
-    "NAM_OSM": "Roßkarsee"
+    "NAM_OSM": "Rosskarsee"
   },
   {
     "OBJECT_ID": "IW35014922",
     "REX": "AT",
     "NAM": "Grosser Winterleitensee",
-    "NAM_OSM": "Großer Winterleitensee"
+    "NAM_OSM": "Grosser Winterleitensee"
   },
   {
     "OBJECT_ID": "IW35014923",
@@ -9675,7 +9675,7 @@
     "OBJECT_ID": "IW11003172",
     "REX": "FR",
     "NAM": "UNK",
-    "NAM_OSM": "UNK"
+    "NAM_OSM": "Lac de la Balme"
   },
   {
     "OBJECT_ID": "IW11003173",
@@ -14871,7 +14871,7 @@
     "OBJECT_ID": "IW24002280",
     "REX": "IT",
     "NAM": "LAGO DI FONTANA BIANCA",
-    "NAM_OSM": "Weißbrunnsee - Lago Fontana Bianca"
+    "NAM_OSM": "Weissbrunnsee - Lago Fontana Bianca"
   },
   {
     "OBJECT_ID": "IW24002282",
@@ -15165,7 +15165,7 @@
     "OBJECT_ID": "IW24002041",
     "REX": "IT",
     "NAM": "UNK",
-    "NAM_OSM": "Großer Timmler Schwarzsee - Lago Nero del Tumulo"
+    "NAM_OSM": "Grosser Timmler Schwarzsee - Lago Nero del Tumulo"
   },
   {
     "OBJECT_ID": "IW24002042",
@@ -15207,7 +15207,7 @@
     "OBJECT_ID": "IW24002049",
     "REX": "IT",
     "NAM": "UNK",
-    "NAM_OSM": "Grießbachsee - Lago di Gries"
+    "NAM_OSM": "Griessbachsee - Lago di Gries"
   },
   {
     "OBJECT_ID": "IW24002050",
@@ -19593,7 +19593,7 @@
     "OBJECT_ID": "IW24002294",
     "REX": "IT",
     "NAM": "UNK",
-    "NAM_OSM": "Großer Pfaffensee - Grande Lago del Prete"
+    "NAM_OSM": "Grosser Pfaffensee - Grande Lago del Prete"
   },
   {
     "OBJECT_ID": "IW24002295",
@@ -20721,7 +20721,7 @@
     "OBJECT_ID": "IW35008539",
     "REX": "AT",
     "NAM": "UNK",
-    "NAM_OSM": "Naturbadesee Wald am Schoberpaß"
+    "NAM_OSM": "Naturbadesee Wald am Schoberpass"
   },
   {
     "OBJECT_ID": "IW35008540",
@@ -21189,7 +21189,7 @@
     "OBJECT_ID": "IW35008120",
     "REX": "AT",
     "NAM": "UNK",
-    "NAM_OSM": "Großer Annateich"
+    "NAM_OSM": "Grosser Annateich"
   },
   {
     "OBJECT_ID": "IW35008121",

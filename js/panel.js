@@ -1,107 +1,149 @@
-import { renderLicPlots, renderLipPlots } from './plots.js';
-import { clearHighlight } from './map.js';
-import { safeDisposeEChart } from './plots.js';
+import {renderLicPlots, renderLipPlots, safeDisposeEChart} from './plots.js';
+import {clearHighlight} from './map.js';
 
-export function setupPanel(){
-  const panel = document.getElementById('panel');
-  const closeBtn = document.getElementById('closeBtn');
+const PLOT_IDS = [
+  'plot-lic-scatter',
+  'plot-lic-agg',
+  'plot-lip-scatter',
+  'plot-lip-table',
+];
 
-  function open(){ panel.classList.add('open'); panel.focus(); }
-  function close(){
+function resizeCharts() {
+  for (const id of PLOT_IDS) {
+    const element = document.getElementById(id);
+    const chart = element && window.echarts?.getInstanceByDom(element);
+    chart?.resize();
+  }
+}
+
+function scheduleChartResize() {
+  requestAnimationFrame(() => requestAnimationFrame(resizeCharts));
+  setTimeout(resizeCharts, 320);
+}
+
+function toTitleCase(value = '') {
+  const text = String(value).trim();
+  if (text.toUpperCase() === 'UNK') {
+    return text;
+  }
+  return text
+    .toLowerCase()
+    .replace(/(^|[\s'-])\p{L}/gu, (match) => match.toUpperCase());
+}
+
+export function setupPanel() {
+  const panel = document.querySelector('#panel');
+  const closeButton = document.querySelector('#closeBtn');
+  const title = document.querySelector('#panel-title');
+  const kicker = document.querySelector('#panel-kicker');
+  const metadata = document.querySelector('#lakeMeta');
+  const hint = document.querySelector('#hint');
+  const bookmarks = [...document.querySelectorAll('.plot-bookmark')];
+
+  let currentMeta = null;
+  let activePlot = 'lic';
+
+  function clearUrl() {
+    const url = new URL(location.href);
+    url.searchParams.delete('lake_id');
+    history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  }
+
+  function open() {
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    scheduleChartResize();
+  }
+
+  function clear() {
+    for (const id of PLOT_IDS) {
+      const element = document.getElementById(id);
+      safeDisposeEChart(element);
+      element.innerHTML = '';
+    }
+    kicker.textContent = 'Lake identifier';
+    title.textContent = 'Lake details';
+    metadata.innerHTML = '';
+    hint.textContent = '';
+    currentMeta = null;
+  }
+
+  function close({updateHistory = true} = {}) {
     panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
     clear();
     clearHighlight();
-    try {
-      // Remove only the lake_id query parameter and preserve the hash
-      const url = new URL(window.location.href);
-      url.searchParams.delete('lake_id');
-      history.replaceState(null, '', url.pathname + url.search + url.hash);
-    } catch (err) {
-      // Fallback: don't modify history if URL parsing fails
-      console.warn('panel.close: failed to update history', err);
-    }
+    if (updateHistory) clearUrl();
   }
 
-  closeBtn.addEventListener('click', close);
-  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
-
-  function clear(){
-    safeDisposeEChart(document.getElementById('plot-lic-scatter'));
-    safeDisposeEChart(document.getElementById('plot-lic-agg'));
-    safeDisposeEChart(document.getElementById('plot-lip-scatter'));
-    safeDisposeEChart(document.getElementById('plot-lip-table'));
-    document.getElementById('panel-title').textContent = 'Lake details';
-    document.getElementById('lakeMeta').innerHTML = '';
-    document.getElementById('hint').textContent = '';
-    document.getElementById('plot-lic-scatter').innerHTML = '';
-    document.getElementById('plot-lic-agg').innerHTML = '';
-    document.getElementById('plot-lip-scatter').innerHTML = '';
-    document.getElementById('plot-lip-table').innerHTML = '';
+  function showPlotContainers(type) {
+    const lic = type === 'lic';
+    document.querySelector('#plot-lic-scatter').hidden = !lic;
+    document.querySelector('#plot-lic-agg').hidden = !lic;
+    document.querySelector('#plot-lip-scatter').hidden = lic;
+    document.querySelector('#plot-lip-table').hidden = lic;
   }
 
-  function render(meta){
-    window.currentMeta = meta;
-    document.getElementById('panel-title').textContent = `${meta.NAM || meta.name || meta.lake_id || '-'}`;
-    const lakeMeta = document.getElementById('lakeMeta');
-    lakeMeta.innerHTML = '';
+  async function renderActivePlot() {
+    if (!currentMeta) return;
+    const id = currentMeta.OBJECT_ID || currentMeta.lake_id;
+    showPlotContainers(activePlot);
+
+    if (activePlot === 'lic') await renderLicPlots(id);
+    else await renderLipPlots(id);
+
+    scheduleChartResize();
+  }
+
+  function renderMetadata(meta) {
     const fields = [
-      ['Lake Name', meta.NAM || '-'],
       ['Country', meta.REX || '-'],
-      ['Lake Identifier (EU-Hydro)', meta.OBJECT_ID || '-'],
-      ['Area (km²)', meta.AREA_GEO ? (meta.AREA_GEO / 1e6).toFixed(1) : '-'],
-      ['Altitude (m a.s.l.)', meta.ALTITUDE ? Number(meta.ALTITUDE).toFixed(1) : '-'],
-      ['Lake Type', meta.LKE_TYPE === 'N' ? 'Natural' : meta.LKE_TYPE === 'R' ? 'Reservoir' : meta.LKE_TYPE === 'U' ? 'Unknown' : '-']
+      ['Area', meta.AREA_GEO ? `${(meta.AREA_GEO / 1e6).toFixed(1)} km²` : '-'],
+      ['Perimeter', meta.PERIMETER ? `${(meta.PERIMETER / 1e3).toFixed(1)} km` : '-'],
+      ['Altitude', meta.ALTITUDE ? `${Number(meta.ALTITUDE).toFixed(1)} m a.s.l.` : '-'],
+      [
+        'Lake type',
+        meta.LKE_TYPE === 'N'
+          ? 'Natural'
+          : meta.LKE_TYPE === 'R'
+            ? 'Reservoir'
+            : meta.LKE_TYPE === 'U'
+              ? 'Unknown'
+              : '-',
+      ],
+      ['In-/outflows', `${meta.LAKIN} / ${meta.LAKOUT}`],
     ];
-    for(const [k,v] of fields){
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.innerHTML = `<div style="font-size:.78rem;color:var(--muted)">${k}</div><div style="font-weight:500">${v ?? '-'}</div>`;
-      lakeMeta.appendChild(div);
-    }
 
-    // --- FIX: Use active bookmark to determine plot type ---
-    const activeBtn = document.querySelector('.plot-bookmark.active');
-    const plotType = activeBtn ? activeBtn.dataset.plot : 'lic';
-
-    if (plotType === 'lic') {
-      document.getElementById('plot-lic-scatter').style.display = '';
-      document.getElementById('plot-lic-agg').style.display = '';
-      document.getElementById('plot-lip-table').style.display = 'none';
-      document.getElementById('plot-lip-scatter').style.display = 'none';
-      renderLicPlots(meta.OBJECT_ID || meta.lake_id);
-    } else if (plotType === 'lip') {
-      document.getElementById('plot-lic-scatter').style.display = 'none';
-      document.getElementById('plot-lic-agg').style.display = 'none';
-      document.getElementById('plot-lip-table').style.display = '';
-      document.getElementById('plot-lip-scatter').style.display = '';
-      renderLipPlots(meta.OBJECT_ID || meta.lake_id);
-    }
-
-    // Bookmark click logic (attach ONCE, outside render if possible)
-    document.querySelectorAll('.plot-bookmark').forEach(btn => {
-      btn.onclick = async () => {
-        document.querySelectorAll('.plot-bookmark').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        if (btn.dataset.plot === 'lic') {
-          document.getElementById('plot-lic-scatter').style.display = '';
-          document.getElementById('plot-lic-agg').style.display = '';
-          document.getElementById('plot-lip-table').style.display = 'none';
-          document.getElementById('plot-lip-scatter').style.display = 'none';
-          await renderLicPlots(meta.OBJECT_ID || meta.lake_id);
-        } else if (btn.dataset.plot === 'lip') {
-          document.getElementById('plot-lic-scatter').style.display = 'none';
-          document.getElementById('plot-lic-agg').style.display = 'none';
-          document.getElementById('plot-lip-scatter').style.display = '';
-          document.getElementById('plot-lip-table').style.display = '';
-          await renderLipPlots(meta.OBJECT_ID || meta.lake_id);
-        }
-      };
-    });
-
-    const links = [];
-    if(meta.dataset_url){ links.push(`<a href="${meta.dataset_url}" target="_blank" rel="noopener">Dataset</a>`); }
-    if(meta.method_url){ links.push(`<a href="${meta.method_url}" target="_blank" rel="noopener">Methodology</a>`); }
+    metadata.innerHTML = fields.map(([label, value]) => `
+      <div class="meta-card">
+        <span>${label}</span>
+        <strong>${value}</strong>
+      </div>
+    `).join('');
   }
 
-  return { open, close, clear, render };
+  async function render(meta) {
+    currentMeta = meta;
+    window.currentMeta = meta;
+    kicker.textContent = meta.OBJECT_ID || '-';
+    title.textContent = toTitleCase(meta.NAM) || '-';
+    renderMetadata(meta);
+    await renderActivePlot();
+  }
+
+  bookmarks.forEach((button) => {
+    button.addEventListener('click', async () => {
+      activePlot = button.dataset.plot;
+      bookmarks.forEach((item) => item.classList.toggle('active', item === button));
+      await renderActivePlot();
+    });
+  });
+
+  closeButton.addEventListener('click', () => close());
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && panel.classList.contains('open')) close();
+  });
+  window.addEventListener('resize', scheduleChartResize);
+
+  return {open, close, clear, render, resize: scheduleChartResize};
 }

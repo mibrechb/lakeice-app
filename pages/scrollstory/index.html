@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Michael Brechbühler">
+<meta name="author" content="Hendrik Wulf">
+<meta name="author" content="Daniel Odermatt">
+
+<title>High-resolution lake ice monitoring using multiple Earth observation missions – Lake Ice Scrollstory</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-32d364ae9b271d67b193b9faf21b29b1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="site_libs/quarto-contrib/intersection-observer-polyfill-1.0.0/intersection-observer.js"></script>
+<script src="site_libs/quarto-contrib/scrollama-3.2.0/scrollama.min.js"></script>
+<script src="site_libs/quarto-contrib/closeread-0.1.0/closeread.js"></script>
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<meta cr-debug-mode="false">
+<meta cr-remove-header-space="false">
+
+
+<link rel="stylesheet" href="site_libs\quarto-contrib\quarto-project\qmd-lab\closeread\closeread.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content page-columns page-full column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">High-resolution lake ice monitoring using multiple Earth observation missions</h1>
+</div>
+
+
+
+<div class="quarto-title-meta column-body">
+
+    <div>
+    <div class="quarto-title-meta-heading">Authors</div>
+    <div class="quarto-title-meta-contents">
+             <p>Michael Brechbühler <a href="https://orcid.org/0000-0001-9941-1632" class="quarto-title-author-orcid" aria-label="ORCID profile for Michael Brechbühler"> <img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+             <p>Hendrik Wulf <a href="https://orcid.org/0000-0002-6161-428X" class="quarto-title-author-orcid" aria-label="ORCID profile for Hendrik Wulf"> <img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+             <p>Daniel Odermatt <a href="https://orcid.org/0000-0001-8449-0593" class="quarto-title-author-orcid" aria-label="ORCID profile for Daniel Odermatt"> <img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+          </div>
+  </div>
+    
+  
+    
+    <div>
+    <div class="quarto-title-meta-heading">Doi</div>
+    <div class="quarto-title-meta-contents">
+      <p class="doi">
+        <a href="https://doi.org/(in preparation)">(in preparation)</a>
+      </p>
+    </div>
+  </div>
+  </div>
+  
+
+
+</header>
+
+
+<section id="section" class="level1 page-columns page-full">
+<h1 class="page-columns page-full"></h1>
+<section id="what-is-this-paper-all-about" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-this-paper-all-about">What is this paper all about?</h2>
+<p>Lake ice cover provides a variety of ecological and cultural ecosystem services, and its loss can lead to consequences such as reduced water quality, oxygen depletion, and increased algal blooms. With increasing pressure from climate change, the timing of seasonal lake ice freeze-up and break-up — referred to as lake ice phenology — is shifting. Research has shown that lakes across the Northern Hemisphere are experiencing progressively earlier ice-off dates, later ice-on dates, and shorter ice durations, with some lakes failing to freeze entirely <span class="citation" data-cites="Sharma2021">(<a href="#ref-Sharma2021" role="doc-biblioref">Sharma et al. 2021</a>)</span>. Due to its critical importance in characterizing the Earth’s climate, lake ice cover has been designated by the Global Climate Observing System (GCOS) as one of the Essential Climate Variables <span class="citation" data-cites="WMO2022">(<a href="#ref-WMO2022" role="doc-biblioref">World Meteorological Organization 2022</a>)</span>, making its measurement vital for understanding and predicting the Earth’s climate.</p>
+<p>We present an Earth Observation (EO) satellite–based approach designed to close in on the GCOS ECV target of daily 50-meter measurements, enabling large-scale monitoring of lake ice cover and phenology with high spatial and temporal detail. In addition, we propose a projection framework that links climate model outputs with our derived ice phenology metrics to assess future lake ice conditions up to the year 2100 under multiple air-temperature forcing scenarios.</p>
+</section>
+<section id="our-study-area-the-european-alps" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="our-study-area-the-european-alps">Our study area, the European Alps</h2>
+<p>The European Alps host a large number of natural lakes and reservoirs across a wide range of elevations, climatic conditions, and geomorphological settings. In recent decades, temperatures in the Alps and the peri-alpine region have risen at twice the rate of the northern hemisphere <span class="citation" data-cites="Dokulil2022">(<a href="#ref-Dokulil2022" role="doc-biblioref">Dokulil 2022</a>)</span>. This pronounced environmental heterogeneity and climatic pressure makes the Alps a natural laboratory for investigating spatial patterns and long-term changes in lake ice cover.</p>
+<p><br>
+</p>
+<div class="column-screen" style="background-image:url(data/img/fig_alps-terra-modis.jpg); background-size: 100vw; height: 400px; background-position: center +40%; background-repeat: no-repeat;">
+
+</div>
+<figcaption>
+Satellite Mosaic of the European Alps, March 2007, synthesized from Moderate Resolution Imaging Spectroradiometer (MODIS) imagery onboard the <a href="https://terra.nasa.gov/">Terra satellite</a>.
+</figcaption>
+<p><br>
+</p>
+<p>Lakes within the Alpine region differ strongly in size, elevation, depth and catchment characteristics. As a result, seasonal ice regimes vary from long-lasting and stable ice cover at high elevations to short, intermittent, or increasingly absent ice cover at the lower plateaus. Capturing this diversity is essential for understanding Alpine lake ice phenology.</p>
+<div class="cr-section cr-column-screen sidebar-left">
+<div class="narrative-col">
+<div class="trigger new-trigger" data-focus-on="cr-dem">
+<div class="narrative">
+
+</div>
+</div>
+<div class="trigger new-trigger" data-focus-on="cr-dem">
+<div class="narrative">
+<p>The spatial extent of our analysis is defined by the perimeter of the Alpine Convention, which encompasses the European Alps across eight countries. This region spans pronounced elevation gradients, from low-lying forelands to high Alpine terrain, resulting in strong climatic contrasts over relatively short distances. These elevation-driven gradients play a central role in shaping lake ice formation, persistence, and break-up.</p>
+</div>
+</div>
+<div class="trigger new-trigger" data-focus-on="cr-lakes">
+<div class="narrative">
+<p>Within the Alpine Convention perimeter, there are more than 3,000 lakes, including both natural lakes and artificial reservoirs. These water bodies are distributed across the entire Alpine arc and occur in a wide range of geomorphological and climatic settings. Together, they represent the full diversity of Alpine lake types relevant for regional-scale ice monitoring.</p>
+</div>
+</div>
+<div class="trigger new-trigger" data-focus-on="cr-hist">
+<div class="narrative">
+<p>For our analysis, we restrict our study to lakes larger than 5 hectares (0.05 km²) to ensure robust and consistent ice detection across sensors and seasons. This selection yields a set of over 1,300 study lakes. These lakes span a broad elevation range and are predominantly small to medium-sized, with most lakes falling between 0 and 1 km² in surface area. Importantly, the selected lakes are distributed across both lower and higher elevations, capturing the full range of Alpine ice regimes.</p>
+</div>
+</div>
+<div class="trigger new-trigger" data-focus-on="cr-trlakes">
+<div class="narrative">
+<p>A smaller subset of lakes is used for model calibration and validation. These training lakes are spatially distributed across the Alps and cover a wide range of lake sizes, elevations, and climatic conditions. For each of these sites, independent ground-based reference data based on webcam imagery were collected.</p>
+</div>
+</div>
+</div>
+<div class="sticky-col">
+<div class="sticky-col-stack">
+<div id="cr-dem" class="sticky">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="data/img/fig_alps-dem.svg" class="img-fluid figure-img"></p>
+<figcaption>Alpine Convention perimeter</figcaption>
+</figure>
+</div>
+</div>
+<div id="cr-lakes" class="sticky">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="data/img/fig_alps-hs-lakes.svg" class="img-fluid figure-img"></p>
+<figcaption>Alpine Convention perimeter with lakes (EU-Hydro)</figcaption>
+</figure>
+</div>
+</div>
+<div id="cr-hist" class="sticky">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="data/img/fig_alps-hs-hist.svg" class="img-fluid figure-img"></p>
+<figcaption>Alpine Convention perimeter with lakes (EU-Hydro)</figcaption>
+</figure>
+</div>
+</div>
+<div id="cr-trlakes" class="sticky">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="data/img/fig_alps-hs-trlakes.svg" class="img-fluid figure-img"></p>
+<figcaption>Alpine Convention perimeter with lakes (EU-Hydro)</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>The webcam image sequences capture the full seasonal ice cycle, including freeze-up, break-up, and mid-winter ice conditions, in a visually interpretable way. These observations are manually annotated and used to label satellite observations at coinciding acquisition times, providing the foundation for our ice modelling framework.</p>
+<p><br>
+</p>
+<figure style="margin:0;" class="figure">
+<video controls="" autoplay="" loop="" muted="" playsinline="" preload="metadata" style="width:100%; max-width:1000px;">
+<source src="data/vid/vid-eibsee.mp4" type="video/mp4">
+Your browser does not support MP4 video. </video>
+<figcaption>
+Daily mid-day webcam imagery of Eibsee, Bavaria, Germany from the 2019 winter ice cycle. <a href="https://www.foto-webcam.eu/webcam/eibsee-nord/">foto-webcam.eu</a>
+</figcaption>
+</figure>
+<p><br>
+</p>
+</section>
+<section id="what-is-the-approach-we-use-in-this-paper" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-the-approach-we-use-in-this-paper">What is the approach we use in this paper?</h2>
+<p>Our framework combines satellite observations from <strong>11 satellites</strong> across the Landsat, Sentinel-1, Sentinel-2 missions and including ECOSTRESS onboard the ISS. Together, these satellites provide optical, thermal, and active microwave imagery, each offering complementary information on lake surface conditions during winter. By combining sensors with different strengths and limitations, we overcome trade-offs in spatial resolution and observation frequency, enabling monitorin@cr-methods-lakeg at the scales required to resolve seasonal lake ice cycles.</p>
+<p><small> Our dataset currently includes Landsat-7 ETM+, Landsat-8 OLI/TIRS, Landsat-8 OLI-2/TIRS-2; Sentinel-1A/B/C/D C-SAR; Sentinel-2A/B/C MSI and ECOSTRESS data. </small></p>
+<div class="cr-section cr-column-screen sidebar-left">
+<div class="narrative-col">
+<div class="trigger new-trigger" data-focus-on="cr-methods-lake">
+<div class="narrative">
+
+</div>
+</div>
+<div class="trigger new-trigger" data-focus-on="cr-methods-lake">
+<div class="narrative">
+
+</div>
+</div>
+<div class="trigger new-trigger" data-focus-on="cr-methods-lake">
+<div class="narrative">
+<p><strong>Eibsee</strong>, located in Bavaria, Germany, is one of the lakes included in our training dataset and represents a smaller water body in the study region, with an area of 1.8 km². Its consistent annual freeze–thaw cycles make it a suitable reference lake for the training and evaluation of ice-classification models.</p>
+</div>
+</div>
+<div class="trigger new-trigger" data-focus-on="cr-methods-optical">
+<div class="narrative">
+<p><strong>Optical satellite imagery</strong> passively measures reflectance of light in the visible to shortwave infrared (SWIR) range. These measurements capture strong spectral contrasts between open water, ice, and snow and provide high spatial detail under clear-sky conditions. Optical observations are, however, limited by cloud cover and require sufficient daylight, which restricts their availability.</p>
+</div>
+</div>
+<div class="trigger new-trigger" data-focus-on="cr-methods-thermal">
+<div class="narrative">
+<p><strong>Thermal satellite observations</strong> measure long-wave infrared radiation emitted by the Earth’s surface and provide means to estimate lake surface temperature. Thermal information offers a direct, physically meaningful indicator of freezing and thawing conditions and supports the discrimination of ice-covered and open-water surfaces. However, thermal data are typically available at coarser spatial resolution and are affected by cloud cover.</p>
+</div>
+</div>
+<div class="trigger new-trigger" data-focus-on="cr-methods-sar">
+<div class="narrative">
+<p><strong>Synthetic aperture radar (SAR)</strong> data actively illuminate the surface using microwave radiation and measure the returned backscatter signal. Radar observations are independent of cloud cover and solar illumination and therefore enable consistent monitoring. SAR backscatter responds to changes in surface roughness associated with open water and ice, but generally exhibits lower signal-to-noise contrast for lake ice than optical or thermal measurements.</p>
+</div>
+</div>
+</div>
+<div class="sticky-col">
+<div class="sticky-col-stack">
+<div id="cr-methods-lake" class="sticky-image-contain sticky">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="data/img/fig_eibsee-basemap.svg" class="img-fluid figure-img"></p>
+<figcaption>Eibsee, Bavaria (DE) - One of the training lakes located at 973 m a.s.l.</figcaption>
+</figure>
+</div>
+</div>
+<div id="cr-methods-optical" class="sticky-image-contain sticky">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="data/img/fig_eibsee-s2-rgb.svg" class="img-fluid figure-img"></p>
+<figcaption>Optical satellite imagery of Eibsee from Sentinel-2A MSI, 28th of March 2019</figcaption>
+</figure>
+</div>
+</div>
+<div id="cr-methods-thermal" class="sticky-image-contain sticky">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="data/img/fig_eibsee-l7-st.svg" class="img-fluid figure-img"></p>
+<figcaption>Thermal satellite imagery of Eibsee from Landsat-7 ETM+, 27th of March 2019</figcaption>
+</figure>
+</div>
+</div>
+<div id="cr-methods-sar" class="sticky-image-contain sticky">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="data/img/fig_eibsee-s1-vv.svg" class="img-fluid figure-img"></p>
+<figcaption>SAR satellite imagery of Eibsee from Sentinel-1B C-SAR, 27th of March 2019</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>To integrate these complementary data sources, we use a two-stage supervised binary classification approach built on temporal convolutional networks (TCNs). TCNs are deep learning architectures suited for sequence-to-sequence tasks. In the first stage, separate sensor-specific models independently estimate the probability of ice presence for each irregular satellite observation. In the second stage, these estimates are harmonized across sensors and time to generate gap-filled, daily lake-ice classifications.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="data/img/fig_ml-framework.svg" class="img-fluid figure-img"></p>
+<figcaption>Illustration of the ice classification framework used for lake ice cover timeseries extraction. The diagram summarizes the application of per-pixel binary supervised classification TCN models in a first per-sensor and second harmonization stage.</figcaption>
+</figure>
+</div>
+<p><br>
+</p>
+<p>The resulting daily per-pixel ice classifications are aggregated to lake scale to generate time series of lake ice cover. From these, we derive key phenology metrics including freeze-up and break-up dates and ice cover duration for each winter season.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="data/img/fig_silsersee-lic.png" class="img-fluid figure-img"></p>
+<figcaption>Lake ice cover and timeseries extracted for Lake Sils, Engadin, Switzerland</figcaption>
+</figure>
+</div>
+<p>Finally, we link the observed lake ice phenology from 2015 to 2026 with coincident air temperature data to quantify lake-specific freezing requirements. Using a freezing-degree-day (FDD) threshold approach, we relate the cumulative winter cooling required for lake freezing to air temperature projections under different climate scenarios (RCP2.6, RCP4.8, RCP8.2). This enables estimates of how frequently lakes are expected to freeze in the future and helps identify regions and elevation ranges where lake ice may become rare or disappear entirely over the coming decades.</p>
+<section id="references" class="level4">
+<h4 class="anchored" data-anchor-id="references">References</h4>
+<div id="refs" class="references csl-bib-body hanging-indent" style="font-size:1rem;" role="list">
+<div id="ref-Dokulil2022" class="csl-entry" role="listitem">
+Dokulil, Martin T. 2022. <span>“Impacts of Climate Warming on Alpine Lakes.”</span> In <em>Oxford Research Encyclopedia of Climate Science</em>. Oxford University Press. <a href="https://doi.org/10.1093/acrefore/9780190228620.013.874">https://doi.org/10.1093/acrefore/9780190228620.013.874</a>.
+</div>
+<div id="ref-Sharma2021" class="csl-entry" role="listitem">
+Sharma, Sapna, David C. Richardson, R. Iestyn Woolway, et al. 2021. <span>“Loss of Ice Cover, Shifting Phenology, and More Extreme Events in Northern Hemisphere Lakes.”</span> <em>Journal of Geophysical Research: Biogeosciences</em> 126 (10). <a href="https://doi.org/10.1029/2021JG006348">https://doi.org/10.1029/2021JG006348</a>.
+</div>
+<div id="ref-WMO2022" class="csl-entry" role="listitem">
+World Meteorological Organization. 2022. <em>The 2022 GCOS ECVs Requirements (GCOS 245)</em>. World Meteorological Organization.
+</div>
+</div>
+<p><br>
+</p>
+<!--
+# {#info} 
+
+This webpage was created with [Quarto](https://quarto.org), [closeread](https://closeread.netlify.app).
+
+-->
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
