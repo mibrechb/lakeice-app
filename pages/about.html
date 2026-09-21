@@ -2,42 +2,79 @@
   <h2>About</h2>
   <p>
     This lake ice platform provides access to satellite-based observations of lake ice cover across the European Alps.
-    It allows users to explore variations in the timing and duration of lake cycles during the last decade.
-    The application is designed as an open and transparent tool to share results from the monitoring framework developed
-    in Brechbühler et al. (in prepartion).
+    It allows users to explore changes in the timing and duration of seasonal lake ice over the past decade and to
+    compare patterns across more than a thousand lakes. The platform was developed as an open and transparent way to
+    share results from the lake ice monitoring framework presented in Brechbühler et al. (in preparation).
   </p>
+
   <section class="page-section">
     <h3>Why monitor lake ice?</h3>
-    <p>Lake ice cover provides a variety of ecological and cultural ecosystem services, and its loss can lead to
-      consequences such as reduced water quality, oxygen depletion, and increased algal blooms. With
-      increasing pressure from climate change, the timing of seasonal lake ice freeze-up and break-up — referred to as
-      lake ice phenology — is shifting. Research has shown that lakes across the Northern Hemisphere are experiencing
-      progressively earlier ice-off dates, later ice-on dates, and shorter ice durations, with some lakes failing to
-      freeze entirely. Due to its critical importance in characterizing the Earth's climate, lake ice cover has been
-        designated by the Global Climate Observing System (GCOS) as one of the <a href="https://gcos.wmo.int/site/global-climate-observing-system-gcos/essential-climate-variables/about-essential-climate-variables" target="_blank" rel="noopener">Essential Climate Variables</a>, making its
-      measurement vital for understanding and predicting the Earth’s climate.</p>
-  </section>
-  <div class="section-divider"></div>
-  <section class="page-section section-image no-text-scale">
-    <div>
-      <h3>How does it work?</h3>
-      <p>Our approach utilizes optical, thermal, and active microwave satellite imagery to detect lake ice from
-        space. Combining data from multiple sensors with high spatial resolution (20–30 meters), the system provides a
-        monitoring approach with sub-weekly to daily observations. A complete processing chain has been implemented to
-        extract lake ice coverage and phenology for lakes as small as 0.05 km² using machine learning
-        classification models.</p>
-    </div>
-    <img src="./data/img/satellite.png" alt="Lake ice monitoring illustration" class="page-img"
-      style="height: 300px; width: auto;">
-  </section>
-  <div class="section-divider"></div>
-  <section class="page-section">
-    <h3>Where to access the data?</h3>
-    <p>The lake ice data is accessible through our web application in the Map tab, which allows users to explore lake
-      ice coverage and
-      phenological event dates for over 1,200 lakes across the European Alps. The full published dataset can be accessed
-      at XXX.
+    <p>
+      Seasonal lake ice plays an important ecological, climatic, and cultural role. Changes in ice cover can affect
+      lake ecosystems and water quality, for example by altering mixing, oxygen conditions, and the timing of biological
+      processes.
+    </p>
+    <p>
+      As the climate warms, the seasonal timing of lake freeze-up and break-up — commonly referred to as lake ice
+      phenology — is changing. Across many lakes in the Northern Hemisphere, ice tends to form later, disappear earlier,
+      and persist for shorter periods, while some lakes increasingly experience winters without complete ice cover.
+    </p>
+    <p>
+      Because lake ice responds sensitively to changes in climate, it is also an important indicator of environmental
+      change. Lake ice cover is recognised by the Global Climate Observing System (GCOS) as part of the
+      <a href="https://gcos.wmo.int/site/global-climate-observing-system-gcos/essential-climate-variables/about-essential-climate-variables"
+        target="_blank" rel="noopener">Essential Climate Variables</a>,
+      highlighting the importance of consistent observations for understanding and monitoring the Earth's climate
+      system.
     </p>
   </section>
+
+  <div class="section-divider"></div>
+
+<section class="page-section section-image no-text-scale">
+  <div>
+    <h3>How does it work?</h3>
+    <p>
+      The monitoring framework combines optical, thermal, and active microwave satellite observations to detect lake
+      ice from space. By integrating information from multiple satellite sensors with spatial resolutions of
+      approximately 30 metres, the system can provide observations from sub-weekly to, under favourable conditions,
+      near-daily intervals.
+    </p>
+    <p>
+      A complete processing workflow is used to derive lake ice cover and seasonal phenology for lakes as small as
+      0.05 km². Machine-learning classification models are applied to the satellite observations to distinguish
+      different surface conditions and reconstruct the seasonal evolution of lake ice.
+    </p>
+    <p>
+      For a more detailed description of the satellite data, processing workflow, and classification approach, see the
+      <a href="#methods">Methods section</a>.
+    </p>
   </div>
+</section>
+
+
+```
+<img
+  src="./data/img/satellite.png"
+  alt="Lake ice monitoring illustration"
+  class="page-img"
+  style="height: 300px; width: auto;"
+>
+```
+
+  </section>
+
+  <div class="section-divider"></div>
+
+  <section class="page-section">
+    <h3>Where can I access the data?</h3>
+    <p>
+      Lake ice observations can be explored directly through the <strong>Map</strong> tab of this application. The map
+      provides access to lake ice coverage and phenological event dates for more than 1,200 lakes across the European
+      Alps.
+    </p>
+    <p>
+      The complete published dataset, together with the associated metadata and documentation, is available at XXX.
+    </p>
+  </section>
 </div>

@@ -1,39 +1,14 @@
-import {CONFIG} from './config.js?v=20260921-3';
-import {setupRouter} from './router.js?v=20260921-3';
-import {setupMap, setMapTheme} from './map.js?v=20260921-3';
+import {CONFIG} from './config.js';
+import {setupRouter} from './router.js';
+import {setupMap, setMapTheme} from './map.js';
 import {setupPanel} from './panel.js';
 
 const panel = setupPanel();
 let mapController = null;
 
-function applyPreviewMode() {
-  const preview = CONFIG.preview || {};
-  const enabled = preview.enabled === true;
-
-  document.body.classList.toggle('preview-mode', enabled);
-
-  document.querySelectorAll('[data-preview-only]').forEach((element) => {
-    element.hidden = !enabled;
-  });
-
-  document.querySelectorAll('[data-preview-title]').forEach((element) => {
-    element.textContent = preview.title || 'Preview';
-  });
-
-  document.querySelectorAll('[data-preview-banner-message]').forEach((element) => {
-    element.textContent = preview.bannerMessage || '';
-  });
-
-  document.querySelectorAll('[data-preview-dialog-message]').forEach((element) => {
-    element.textContent = preview.dialogMessage || preview.bannerMessage || '';
-  });
-}
-
-
 function preferredTheme() {
   const saved = localStorage.getItem('lakeice-theme');
-  if (saved === 'light' || saved === 'dark') return saved;
-  return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return saved === 'dark' ? 'dark' : 'light';
 }
 
 function applyTheme(theme, {rerender = false} = {}) {
@@ -62,7 +37,6 @@ const router = setupRouter({
 });
 
 applyTheme(preferredTheme());
-applyPreviewMode();
 
 document.querySelector('#themeToggle').addEventListener('click', () => {
   const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
@@ -94,9 +68,7 @@ function closeWelcome() {
 }
 
 async function openWelcomeLake() {
-  const available = CONFIG.welcomeLakes.filter((lake) =>
-    mapController.hasLake(lake.id) && mapController.hasLakeData(lake.id),
-  );
+  const available = CONFIG.welcomeLakes.filter((lake) => mapController.hasLake(lake.id));
   if (!available.length) return;
 
   const lake = available[Math.floor(Math.random() * available.length)];
@@ -107,17 +79,11 @@ async function openWelcomeLake() {
 
 document.querySelector('#welcome-close').addEventListener('click', closeWelcome);
 document.querySelector('#welcome-start').addEventListener('click', closeWelcome);
-document.querySelector('#welcome-methods').addEventListener('click', async () => {
-  closeWelcome();
-  await router.show('methods');
-});
 welcomeLake.addEventListener('click', () => void openWelcomeLake());
 
 welcomeDialog.addEventListener('click', (event) => {
   if (event.target === welcomeDialog) closeWelcome();
 });
 
-welcomeLake.disabled = !CONFIG.welcomeLakes.some((lake) =>
-  mapController.hasLake(lake.id) && mapController.hasLakeData(lake.id),
-);
+welcomeLake.disabled = !CONFIG.welcomeLakes.some((lake) => mapController.hasLake(lake.id));
 requestAnimationFrame(() => welcomeDialog.showModal());
